@@ -784,7 +784,7 @@ with st.sidebar:
     # 1. 恢复人工校验基石状态
     if EEAT_VERIFIED_DIR.exists():
         verified_count = len(list(EEAT_VERIFIED_DIR.glob("*.md")))
-        if verified_count >= 3:
+        if verified_count >= 10:
             st.session_state["verified_loaded"] = True
             st.session_state["verified_count"] = verified_count
 
@@ -1120,7 +1120,7 @@ elif st.session_state["page"].startswith("⚙️"):
 
     st.markdown("""
     <div class="constraint-warn">
-    🛑 <strong>HITL 人机协同节点</strong>：此节点必须上传由人工团队纯手写撰写并深度校验的 3 篇高质量基石文档，方可解锁后续步骤。<br>
+    🛑 <strong>HITL 人机协同节点</strong>：此节点必须上传由人工团队纯手写撰写并深度校验的 10 篇高质量基石文档，方可解锁后续步骤。<br>
     步骤 4（切片）和步骤 5（UGC）的 <strong>唯一事实来源</strong> 将从此处上传的校验版基石中提取。
     </div>
     """, unsafe_allow_html=True)
@@ -1135,8 +1135,8 @@ elif st.session_state["page"].startswith("⚙️"):
     )
 
     if st.button("🔄 保存已校验基石并锁定数据源", type="primary", use_container_width=True, key="btn_verify"):
-        if not verified_files or len(verified_files) < 3:
-            st.error(f"🚨 请至少上传 3 篇校验版 .md 文件！当前仅上传 {len(verified_files) if verified_files else 0} 篇。")
+        if not verified_files or len(verified_files) < 10:
+            st.error(f"🚨 请至少上传 10 篇校验版 .md 文件！当前仅上传 {len(verified_files) if verified_files else 0} 篇。")
         else:
             # 清空旧校验文件
             import shutil
@@ -1180,11 +1180,11 @@ elif st.session_state["page"].startswith("⚙️"):
     st.markdown("### ✂️ 步骤 4：裂变 30 篇【企业官方视角】三级切片 (L1-L6 均分)")
 
     if not st.session_state.get("verified_loaded", False):
-        st.warning("⛔ 请先在步骤 1 上传至少 3 篇校验版基石文档解锁此步骤。")
+        st.warning("⛔ 请先在步骤 1 上传至少 10 篇校验版基石文档解锁此步骤。")
     else:
         verified_files = list(EEAT_VERIFIED_DIR.glob("*.md")) if EEAT_VERIFIED_DIR.exists() else []
-        if len(verified_files) < 3:
-            st.warning(f"⚠️ 系统检测到 `EEAT_Base_Verified` 目录中仅有 {len(verified_files)} 篇 .md 文件。请补充上传至至少 3 篇！")
+        if len(verified_files) < 10:
+            st.warning(f"⚠️ 系统检测到 `EEAT_Base_Verified` 目录中仅有 {len(verified_files)} 篇 .md 文件。请补充上传至至少 10 篇！")
         else:
             st.markdown("""
             <div class="constraint-warn">
@@ -1586,7 +1586,7 @@ elif st.session_state["page"].startswith("⚙️"):
         st.markdown(f"""
         | 模块 | 数量 | 输出路径 | 数据来源 | Prompt 模板 |
         |------|------|----------|----------|------------|
-        | EEAT 权威基石 | 3 篇 | `{EEAT_VERIFIED_DIR}/` | ← raw_materials(草稿)→人工校验 | 自定义基石 Prompt |
+        | EEAT 权威基石 | 10 篇 | `{EEAT_VERIFIED_DIR}/` | ← raw_materials(草稿)→人工校验 | 自定义基石 Prompt |
         | 三级切片内容 | 30 篇 | `{PROD_DIR}/Slices_30/` | ← 10 篇基石 | CORP_PROMPT_TEMPLATES |
         | 四级通用 UGC | 96 篇 | `{PROD_DIR}/UGC_160/General_96/` | ← 10基石+30切片 | V2_UGC_TEMPLATES |
         | 四级引擎专属 | 64 篇 | `{PROD_DIR}/UGC_160/Specific_64/` | ← 10基石+30切片 | P_ENGINE_REWRITE |
