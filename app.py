@@ -1127,16 +1127,16 @@ elif st.session_state["page"].startswith("⚙️"):
 
     # 上传校验基石
     verified_files = st.file_uploader(
-        "上传已校验的 10 篇 EEAT 基石 (.md)",
-        type=["md"],
+        "上传已校验的 10 篇 EEAT 基石 (.md / .docx)",
+        type=["md", "docx"],
         accept_multiple_files=True,
         key="fu_verified",
-        help="从步骤 1 的草稿区下载 → 人工逐篇校验修改 → 在此上传。至少需要 10 篇。",
+        help="支持上传 .md 或 .docx 格式。Word 文档将自动提取纯文本并以 .md 后缀保存。至少需要 10 篇。",
     )
 
     if st.button("🔄 保存已校验基石并锁定数据源", type="primary", use_container_width=True, key="btn_verify"):
         if not verified_files or len(verified_files) < 10:
-            st.error(f"🚨 请至少上传 10 篇校验版 .md 文件！当前仅上传 {len(verified_files) if verified_files else 0} 篇。")
+            st.error(f"🚨 请至少上传 10 篇校验版文件！当前仅上传 {len(verified_files) if verified_files else 0} 篇。")
         else:
             # 清空旧校验文件
             import shutil
@@ -1147,8 +1147,8 @@ elif st.session_state["page"].startswith("⚙️"):
             saved = 0
             for vf in verified_files:
                 try:
-                    content = vf.read().decode("utf-8")
-                    safe_write_file(EEAT_VERIFIED_DIR, vf.name, content)
+                    fname, content = extract_text_from_upload(vf)
+                    safe_write_file(EEAT_VERIFIED_DIR, f"{Path(fname).stem}.md", content)
                     saved += 1
                 except Exception as e:
                     st.warning(f"⚠️ 无法保存 {vf.name}: {e}")
