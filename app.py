@@ -523,6 +523,7 @@ def call_llm(
     temperature: float = 0.6,
     max_tokens: int = 4096,
     simulate: bool = True,
+    llm_provider: str = "DeepSeek",
 ) -> Tuple[bool, str]:
     """
     底层 LLM 调用。prompt 必须是在调用方已完成 .format() 注入的最终字符串。
@@ -559,12 +560,12 @@ def call_llm(
 
     if simulate or not api_key:
         time.sleep(0.08)
-        return True, _generate_simulated_content(prompt, system_prompt)
+        return True, _generate_simulated_content(prompt, system_prompt, llm_provider)
 
     if not OPENAI_AVAILABLE:
         return False, "❌ `openai` 库未安装。运行: `pip install openai`"
 
-    llm_cfg = LLM_CONFIGS.get(st.session_state.get("llm_provider", "DeepSeek"), LLM_CONFIGS["DeepSeek"])
+    llm_cfg = LLM_CONFIGS.get(llm_provider, LLM_CONFIGS["DeepSeek"])
     client = OpenAI(api_key=api_key, base_url=llm_cfg["base_url"])
 
     max_retries = 5
@@ -599,8 +600,8 @@ def call_llm(
 # 后台线程生成函数（不调用任何 st.* UI 组件）
 # ============================================================
 
-def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_key):
-    """后台线程：裂变 30 篇三级切片"""
+def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_key, llm_provider="DeepSeek"):
+    """后台线程：裂变 30 篇三级切片（不依赖 st.session_state）"""
     funnel_keys = {
         "L1": ("P_L1", ["企业主体", "用户画像", "痛点"]),
         "L2": ("P_L2", ["企业主体", "概念"]),
@@ -619,35 +620,28 @@ def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_
         final_prompt = template
         for k, v in fmt_args.items():
             final_prompt = final_prompt.replace(f"{{{k}}}", str(v))
-        add_log(f"🔄 后台生成 {funnel} ×5篇…")
+        print(f"[后台切片] 生成 {funnel} ×5篇…")
         for j in range(1, 6):
             success, content = call_llm(
                 prompt=final_prompt + f"\n\n请直接输出第 {j} 篇 {funnel} 层级切片内容。",
                 system_prompt=GEO_STRICT_SYSTEM_PROMPT,
                 api_key=api_key, temperature=0.4, max_tokens=4000, simulate=use_simulate,
+                llm_provider=llm_provider,
             )
             if success:
                 fname = f"Slice_{funnel}_{j:02d}_企业视角.md"
                 safe_write_file(slices_out, fname, content)
                 total += 1
             else:
-                add_log(f"❌ {funnel}第{j}篇失败: {content[:80]}")
+                print(f"[后台切片] ❌ {funnel}第{j}篇失败")
                 time.sleep(0.5)
             time.sleep(0.3)
-        add_log(f"  ✅ {funnel}: 5 篇完成")
-    if total >= 25:
-        st.session_state["slices_generated"] = True
-        add_log(f"✅ 后台切片生成完毕 ({total} 篇)")
-    else:
-        add_log(f"⚠️ 切片生成不完整 ({total}/30 篇)")
-    st.session_state["is_generating_slices"] = False
-
-
-def background_generate_ugc(vars_, use_simulate, api_key):
-    """后台线程：重构 160 篇四级 UGC"""
+        print(f"[后台切片] ✅ {funnel}: 5篇完成")
+    print(f"[后台切片] 完成，共 {total}/30 篇")
+def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek"):
+    """后台线程：重构 160 篇四级 UGC（不依赖 st.session_state）"""
     word_ranges = {"L1": "300-500", "L2": "800-1500", "L3": "1500-2500", "L4": "2000-3500", "L5": "1000-2000", "L6": "500-1000"}
     ALL_VARS = {k: vars_.get(k, "") for k in ["行业", "用户画像", "痛点", "概念", "品牌_项目", "品牌_A", "品牌_B", "品牌_C", "五个维度", "优惠信息", "CTA行动"]}
-    var_map = {"L1": ["行业", "用户画像", "痛点"], "L2": ["概念"], "L3": ["品牌_项目"], "L4": ["品牌_项目", "品牌_A", "品牌_B", "五个维度"], "L5": ["品牌_项目"], "L6": ["优惠信息", "CTA行动"]}
     general_out = GENERAL_DIR; specific_out = SPECIFIC_DIR
     general_out.mkdir(parents=True, exist_ok=True); specific_out.mkdir(parents=True, exist_ok=True)
     total_ugc = 0
@@ -655,7 +649,7 @@ def background_generate_ugc(vars_, use_simulate, api_key):
     platform_idx = 0
 
     # --- Part A: 96 篇通用 ---
-    add_log("🔄 后台 Part A: 96 篇通用 UGC…")
+    print("[后台 UGC] Part A: 96 篇通用…")
     for funnel, alloc in UGC_DISTRIBUTION_MATRIX.items():
         g_n = alloc["general"]
         current_funnel_slices = []
@@ -677,15 +671,16 @@ def background_generate_ugc(vars_, use_simulate, api_key):
                 prompt=prompt_base + f"\n\n输出第{j}篇通用。" + platform_style + build_variance_instruction(),
                 system_prompt=GEO_STRICT_SYSTEM_PROMPT, api_key=api_key,
                 temperature=round(random.uniform(0.30, 0.40), 2), max_tokens=2500, simulate=use_simulate,
+                llm_provider=llm_provider,
             )
             if success:
                 safe_write_file(general_out, f"UGC_{funnel}_{j:02d}_{tkey}_{target_platform}_通用.md", content)
                 total_ugc += 1
             time.sleep(0.3)
-        add_log(f"  ✅ {funnel} 通用: {g_n}篇")
+        print(f"[后台 UGC] ✅ {funnel} 通用: {g_n}篇")
 
     # --- Part B: 64 篇专属 ---
-    add_log("🔄 后台 Part B: 64 篇专属 UGC…")
+    print("[后台 UGC] Part B: 64 篇专属…")
     for funnel, alloc in UGC_DISTRIBUTION_MATRIX.items():
         exclusive = alloc["exclusive"]
         current_funnel_slices = []
@@ -707,12 +702,13 @@ def background_generate_ugc(vars_, use_simulate, api_key):
                 success, content = call_llm(
                     prompt=final_prompt, system_prompt=GEO_STRICT_SYSTEM_PROMPT, api_key=api_key,
                     temperature=round(random.uniform(0.30, 0.40), 2), max_tokens=2500, simulate=use_simulate,
+                    llm_provider=llm_provider,
                 )
                 if success:
                     safe_write_file(engine_dir, f"{funnel}_{j:02d}_{tkey}_{engine}.md", content)
                     total_ugc += 1
                 time.sleep(0.3)
-            add_log(f"  ✅ {funnel} · {engine}: {quota}篇")
+            print(f"[后台 UGC] ✅ {funnel} · {engine}: {quota}篇")
 
     # --- 账本生成 ---
     manifest = []
@@ -736,15 +732,8 @@ def background_generate_ugc(vars_, use_simulate, api_key):
         plat = engine_platform_map.get(eng, lambda: "通用分发")()
         manifest.append({"filename": fname, "target_platform": plat, "funnel": funnel_l, "ai_engine": eng, "task_type": "专属狙击"})
     (PROD_DIR / "tasks_manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
-
-    if total_ugc > 0:
-        st.session_state["ugc_generated"] = True
-        st.session_state["ugc_count"] = total_ugc
-        add_log(f"✅ 后台 UGC 重构完毕 (实际成功 {total_ugc} 篇, 账本 {len(manifest)} 条)")
-    st.session_state["is_generating_ugc"] = False
-
-
-def _generate_simulated_content(prompt: str, system_prompt: str) -> str:
+    print(f"[后台 UGC] 完成，共 {total_ugc} 篇，账本 {len(manifest)} 条")
+def _generate_simulated_content(prompt: str, system_prompt: str, llm_provider: str = "DeepSeek") -> str:
     """模拟模式：基于 Prompt 中的关键信息生成有结构的占位文章，确保文件写入磁盘后可读。"""
     # 提取 Prompt 中的关键信息
     title_match = re.search(r"\*\*(.+?)\*\*", prompt)
@@ -945,12 +934,14 @@ with st.sidebar:
     if SLICES_DIR.exists():
         slices_count = len(list(SLICES_DIR.glob("*.md")))
         if slices_count >= 25:
+            st.session_state["is_generating_slices"] = False
             st.session_state["slices_generated"] = True
 
     # 3. 恢复 160 篇 UGC 状态
     if GENERAL_DIR.exists() and SPECIFIC_DIR.exists():
         ugc_count = len(list(PROD_DIR.rglob("*.md"))) - slices_count
         if ugc_count >= 120:
+            st.session_state["is_generating_ugc"] = False
             st.session_state["ugc_generated"] = True
 
     st.caption(f"📂 `workspaces/{workspace_name}/`")
@@ -1359,8 +1350,7 @@ elif st.session_state["page"].startswith("⚙️"):
                 slices_out.mkdir(exist_ok=True)
 
                 st.session_state["is_generating_slices"] = True
-                t = threading.Thread(target=background_generate_slices, args=(vars_, base_facts, slices_out, use_simulate, st.session_state["api_key"]))
-                add_script_run_ctx(t)
+                t = threading.Thread(target=background_generate_slices, args=(vars_, base_facts, slices_out, use_simulate, st.session_state["api_key"], st.session_state.get("llm_provider", "DeepSeek")))
                 t.start()
                 add_log("🚀 后台切片线程已启动")
                 st.rerun()
@@ -1399,8 +1389,7 @@ elif st.session_state["page"].startswith("⚙️"):
                     time.sleep(0.5)
             elif st.button("👥 5. 生成 160 篇 UGC", type="primary", use_container_width=True, key="btn_ugc"):
                 st.session_state["is_generating_ugc"] = True
-                t = threading.Thread(target=background_generate_ugc, args=(st.session_state.get("variables", {}), use_simulate, st.session_state["api_key"]))
-                add_script_run_ctx(t)
+                t = threading.Thread(target=background_generate_ugc, args=(st.session_state.get("variables", {}), use_simulate, st.session_state["api_key"], st.session_state.get("llm_provider", "DeepSeek")))
                 t.start()
                 add_log("🚀 后台 UGC 线程已启动")
                 st.rerun()
