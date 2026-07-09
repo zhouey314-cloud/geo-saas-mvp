@@ -11,7 +11,8 @@
 """
 
 import streamlit as st
-import os, re, json, base64, time, random
+import os, re, json, base64, time, random, threading
+from streamlit.runtime.scriptrunner import add_script_run_ctx
 from pathlib import Path
 from datetime import datetime
 from collections import defaultdict
@@ -411,6 +412,8 @@ DEFAULTS = {
     # 生产车间 — 产出
     "eeat_generated": False, "eeat_outputs": {},
     "verified_loaded": False, "verified_count": 0,
+    "is_generating_slices": False,
+    "is_generating_ugc": False,
     "slices_generated": False, "slices_outputs": {},
     "ugc_generated": False, "ugc_count": 0,
     "production_log": [],
@@ -590,6 +593,155 @@ def call_llm(
                     time.sleep(wait_sec)
                     continue
             return False, f"❌ API 调用失败 (已重试 {attempt} 次): {err_msg}"
+
+
+# ============================================================
+# 后台线程生成函数（不调用任何 st.* UI 组件）
+# ============================================================
+
+def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_key):
+    """后台线程：裂变 30 篇三级切片"""
+    funnel_keys = {
+        "L1": ("P_L1", ["企业主体", "用户画像", "痛点"]),
+        "L2": ("P_L2", ["企业主体", "概念"]),
+        "L3": ("P_L3", ["企业主体", "品牌_项目"]),
+        "L4": ("P_L4", ["企业主体", "品牌_项目", "品牌_A", "品牌_B", "五个维度"]),
+        "L5": ("P_L5", ["企业主体", "品牌_项目"]),
+        "L6": ("P_L6", ["企业主体", "优惠信息", "CTA行动"]),
+    }
+    total = 0
+    for funnel in ["L1", "L2", "L3", "L4", "L5", "L6"]:
+        template_key, required_vars = funnel_keys[funnel]
+        template = CORP_PROMPT_TEMPLATES[template_key]
+        fmt_args = {"base_facts": base_facts}
+        for rv in required_vars:
+            fmt_args[rv] = vars_.get(rv, f"（{rv}待补充）")
+        final_prompt = template
+        for k, v in fmt_args.items():
+            final_prompt = final_prompt.replace(f"{{{k}}}", str(v))
+        add_log(f"🔄 后台生成 {funnel} ×5篇…")
+        for j in range(1, 6):
+            success, content = call_llm(
+                prompt=final_prompt + f"\n\n请直接输出第 {j} 篇 {funnel} 层级切片内容。",
+                system_prompt=GEO_STRICT_SYSTEM_PROMPT,
+                api_key=api_key, temperature=0.4, max_tokens=4000, simulate=use_simulate,
+            )
+            if success:
+                fname = f"Slice_{funnel}_{j:02d}_企业视角.md"
+                safe_write_file(slices_out, fname, content)
+                total += 1
+            else:
+                add_log(f"❌ {funnel}第{j}篇失败: {content[:80]}")
+                time.sleep(0.5)
+            time.sleep(0.3)
+        add_log(f"  ✅ {funnel}: 5 篇完成")
+    if total >= 25:
+        st.session_state["slices_generated"] = True
+        add_log(f"✅ 后台切片生成完毕 ({total} 篇)")
+    else:
+        add_log(f"⚠️ 切片生成不完整 ({total}/30 篇)")
+    st.session_state["is_generating_slices"] = False
+
+
+def background_generate_ugc(vars_, use_simulate, api_key):
+    """后台线程：重构 160 篇四级 UGC"""
+    word_ranges = {"L1": "300-500", "L2": "800-1500", "L3": "1500-2500", "L4": "2000-3500", "L5": "1000-2000", "L6": "500-1000"}
+    ALL_VARS = {k: vars_.get(k, "") for k in ["行业", "用户画像", "痛点", "概念", "品牌_项目", "品牌_A", "品牌_B", "品牌_C", "五个维度", "优惠信息", "CTA行动"]}
+    var_map = {"L1": ["行业", "用户画像", "痛点"], "L2": ["概念"], "L3": ["品牌_项目"], "L4": ["品牌_项目", "品牌_A", "品牌_B", "五个维度"], "L5": ["品牌_项目"], "L6": ["优惠信息", "CTA行动"]}
+    general_out = GENERAL_DIR; specific_out = SPECIFIC_DIR
+    general_out.mkdir(parents=True, exist_ok=True); specific_out.mkdir(parents=True, exist_ok=True)
+    total_ugc = 0
+    platforms = list(MEDIA_PLATFORM_GUIDES.keys())
+    platform_idx = 0
+
+    # --- Part A: 96 篇通用 ---
+    add_log("🔄 后台 Part A: 96 篇通用 UGC…")
+    for funnel, alloc in UGC_DISTRIBUTION_MATRIX.items():
+        g_n = alloc["general"]
+        current_funnel_slices = []
+        if SLICES_DIR.exists():
+            for f in sorted(SLICES_DIR.glob(f"*{funnel}*.md")):
+                current_funnel_slices.append(f.read_text(encoding="utf-8"))
+        base_facts_ugc = "\n\n---\n\n".join(current_funnel_slices)
+        for j in range(1, g_n + 1):
+            tkey = random.choice(alloc["templates"])
+            template = V2_UGC_TEMPLATES[tkey]
+            target_platform = platforms[platform_idx % len(platforms)]
+            platform_idx += 1
+            platform_style = f"\n【平台定向分发要求】本文将发往【{target_platform}】，请严格遵守其风格：{MEDIA_PLATFORM_GUIDES[target_platform]}。"
+            fmt_args = {"base_facts": base_facts_ugc, "word_range": word_ranges[funnel], **ALL_VARS}
+            prompt_base = template
+            for k, v in fmt_args.items():
+                prompt_base = prompt_base.replace(f"{{{k}}}", str(v))
+            success, content = call_llm(
+                prompt=prompt_base + f"\n\n输出第{j}篇通用。" + platform_style + build_variance_instruction(),
+                system_prompt=GEO_STRICT_SYSTEM_PROMPT, api_key=api_key,
+                temperature=round(random.uniform(0.30, 0.40), 2), max_tokens=2500, simulate=use_simulate,
+            )
+            if success:
+                safe_write_file(general_out, f"UGC_{funnel}_{j:02d}_{tkey}_{target_platform}_通用.md", content)
+                total_ugc += 1
+            time.sleep(0.3)
+        add_log(f"  ✅ {funnel} 通用: {g_n}篇")
+
+    # --- Part B: 64 篇专属 ---
+    add_log("🔄 后台 Part B: 64 篇专属 UGC…")
+    for funnel, alloc in UGC_DISTRIBUTION_MATRIX.items():
+        exclusive = alloc["exclusive"]
+        current_funnel_slices = []
+        if SLICES_DIR.exists():
+            for f in sorted(SLICES_DIR.glob(f"*{funnel}*.md")):
+                current_funnel_slices.append(f.read_text(encoding="utf-8"))
+        base_facts_ugc_b = "\n\n---\n\n".join(current_funnel_slices)
+        for engine, quota in exclusive.items():
+            engine_dir = specific_out / engine; engine_dir.mkdir(parents=True, exist_ok=True)
+            adaptation = build_platform_adaptation(engine)
+            for j in range(1, quota + 1):
+                tkey = random.choice(alloc["templates"])
+                template = V2_UGC_TEMPLATES[tkey]
+                fmt_args = {"base_facts": base_facts_ugc_b, "word_range": word_ranges[funnel], **ALL_VARS}
+                prompt_base = template
+                for k, v in fmt_args.items():
+                    prompt_base = prompt_base.replace(f"{{{k}}}", str(v))
+                final_prompt = prompt_base + f"\n\n输出{engine}专属第{j}篇。" + adaptation + build_variance_instruction()
+                success, content = call_llm(
+                    prompt=final_prompt, system_prompt=GEO_STRICT_SYSTEM_PROMPT, api_key=api_key,
+                    temperature=round(random.uniform(0.30, 0.40), 2), max_tokens=2500, simulate=use_simulate,
+                )
+                if success:
+                    safe_write_file(engine_dir, f"{funnel}_{j:02d}_{tkey}_{engine}.md", content)
+                    total_ugc += 1
+                time.sleep(0.3)
+            add_log(f"  ✅ {funnel} · {engine}: {quota}篇")
+
+    # --- 账本生成 ---
+    manifest = []
+    engine_platform_map = {
+        "豆包": lambda: random.choice(["头条号", "抖音图文"]),
+        "元宝": lambda: random.choice(["微信公众号", "企鹅号"]),
+        "千问": lambda: random.choice(["知乎", "什么值得买"]),
+        "文心一言": lambda: random.choice(["百家号", "搜狐号", "网易号"]),
+        "DeepSeek": lambda: "CSDN",
+        "Kimi": lambda: random.choice(["哔哩图文", "简书"]),
+    }
+    for f in sorted(GENERAL_DIR.glob("*.md")):
+        fname = f.name; funnel_l = extract_funnel_from_filename(fname) or "L3"
+        plat = "通用分发"
+        for p in MEDIA_PLATFORM_GUIDES:
+            if p in fname: plat = p; break
+        manifest.append({"filename": fname, "target_platform": plat, "funnel": funnel_l, "ai_engine": "通用", "task_type": "通用铺设"})
+    for f in sorted(SPECIFIC_DIR.rglob("*.md")):
+        fname = f.name; funnel_l = extract_funnel_from_filename(fname) or "L3"
+        eng = extract_engine_from_filename(fname) or "通用"
+        plat = engine_platform_map.get(eng, lambda: "通用分发")()
+        manifest.append({"filename": fname, "target_platform": plat, "funnel": funnel_l, "ai_engine": eng, "task_type": "专属狙击"})
+    (PROD_DIR / "tasks_manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    if total_ugc > 0:
+        st.session_state["ugc_generated"] = True
+        st.session_state["ugc_count"] = total_ugc
+        add_log(f"✅ 后台 UGC 重构完毕 (实际成功 {total_ugc} 篇, 账本 {len(manifest)} 条)")
+    st.session_state["is_generating_ugc"] = False
 
 
 def _generate_simulated_content(prompt: str, system_prompt: str) -> str:
@@ -1195,66 +1347,22 @@ elif st.session_state["page"].startswith("⚙️"):
             </div>
             """, unsafe_allow_html=True)
 
-            if st.button("✂️ 4. 裂变 30 篇企业视角切片", type="primary", use_container_width=True, key="btn_slices"):
+            if st.session_state.get("is_generating_slices"):
+                st.info("🚀 正在后台全速裂变切片中，您可以切换到【交付资产大盘】实时查看产出！")
+                with st.spinner("后台生成中…"):
+                    time.sleep(0.5)
+            elif st.button("✂️ 4. 裂变 30 篇企业视角切片", type="primary", use_container_width=True, key="btn_slices"):
                 vars_ = st.session_state.get("variables", {})
-                # 读取人工校验版 10 篇基石作为唯一事实来源
                 eeat_files = sorted(EEAT_VERIFIED_DIR.glob("*.md"))
                 base_facts = "\n\n---\n\n".join(f.read_text(encoding="utf-8") for f in eeat_files)
-
                 slices_out = SLICES_DIR
                 slices_out.mkdir(exist_ok=True)
-                total = 0
 
-                # 每层的 Prompt 模板 key 和对应的变量（企业官方视角）
-                funnel_keys = {
-                    "L1": ("P_L1", ["企业主体", "用户画像", "痛点"]),
-                    "L2": ("P_L2", ["企业主体", "概念"]),
-                    "L3": ("P_L3", ["企业主体", "品牌_项目"]),
-                    "L4": ("P_L4", ["企业主体", "品牌_项目", "品牌_A", "品牌_B", "五个维度"]),
-                    "L5": ("P_L5", ["企业主体", "品牌_项目"]),
-                    "L6": ("P_L6", ["企业主体", "优惠信息", "CTA行动"]),
-                }
-
-                word_ranges = {"L1":"300-500","L2":"800-1500","L3":"1500-2500","L4":"2000-3500","L5":"1000-2000","L6":"500-1000"}
-
-                with st.status("正在裂变 30 篇三级切片 (L1-L6 每层 5 篇)…", expanded=True) as status:
-                    for funnel in ["L1","L2","L3","L4","L5","L6"]:
-                        template_key, required_vars = funnel_keys[funnel]
-                        template = CORP_PROMPT_TEMPLATES[template_key]
-
-                        # 构建 .format() 参数字典
-                        fmt_args = {"base_facts": base_facts}
-                        for rv in required_vars:
-                            fmt_args[rv] = vars_.get(rv, f"（{rv}待补充）")
-
-                        # 使用极度稳定的 .replace() 强制注入
-                        final_prompt = template
-                        for k, v in fmt_args.items():
-                            final_prompt = final_prompt.replace(f"{{{k}}}", str(v))
-
-                        st.write(f"🔄 生成 {funnel} ({word_ranges[funnel]}, 5篇) · 使用模板: {template_key}")
-
-                        for j in range(1, 6):
-                            success, content = call_llm(
-                                prompt=final_prompt + f"\n\n请直接输出第 {j} 篇 {funnel} 层级切片内容。",
-                                system_prompt=GEO_STRICT_SYSTEM_PROMPT,
-                                api_key=st.session_state["api_key"],
-                                temperature=0.4, max_tokens=4000, simulate=use_simulate,
-                            )
-                            if success:
-                                fname = f"Slice_{funnel}_{j:02d}_企业视角.md"
-                                safe_write_file(slices_out, fname, content)
-                                total += 1
-                                time.sleep(1.5)
-                            else:
-                                st.error(f"❌ 第 {j} 篇生成失败: {content}")
-                                time.sleep(0.5)
-                        st.write(f"  ✅ {funnel}: 5 篇完成")
-
-                    if total == 30:
-                        st.session_state["slices_generated"] = True
-                        add_log("✅ 30 篇三级切片裂变完毕")
-                        status.update(label="✅ 30 篇切片裂变完成！", state="complete")
+                st.session_state["is_generating_slices"] = True
+                t = threading.Thread(target=background_generate_slices, args=(vars_, base_facts, slices_out, use_simulate, st.session_state["api_key"]))
+                add_script_run_ctx(t)
+                t.start()
+                add_log("🚀 后台切片线程已启动")
                 st.rerun()
 
     if st.session_state["slices_generated"]:
@@ -1285,160 +1393,17 @@ elif st.session_state["page"].startswith("⚙️"):
         </div>
         """, unsafe_allow_html=True)
 
-        if st.button("👥 5. 生成 160 篇 UGC", type="primary", use_container_width=True, key="btn_ugc"):
-            with st.status("正在重构 160 篇 UGC...", expanded=True) as status:
-                general_out = GENERAL_DIR
-                specific_out = SPECIFIC_DIR
-                general_out.mkdir(parents=True, exist_ok=True)
-                specific_out.mkdir(parents=True, exist_ok=True)
-                total_ugc = 0
-                vars_ = st.session_state.get("variables", {})
-
-                word_ranges = {"L1":"300-500", "L2":"800-1500", "L3":"1500-2500", "L4":"2000-3500", "L5":"1000-2000", "L6":"500-1000"}
-
-                # 变量映射表（用于 .format() 注入）
-                var_map = {
-                    "L1": ["行业", "用户画像", "痛点"],
-                    "L2": ["概念"],
-                    "L3": ["品牌_项目"],
-                    "L4": ["品牌_项目", "品牌_A", "品牌_B", "五个维度"],
-                    "L5": ["品牌_项目"],
-                    "L6": ["优惠信息", "CTA行动"],
-                }
-
-                    # ============================================================
-                # Part A: 96 篇通用 UGC（12平台分发）
-                # ============================================================
-                st.write("🔄 Part A: 96 篇通用 UGC（12平台风格分发）…")
-                ALL_VARS = {k: vars_.get(k, "") for k in ["行业","用户画像","痛点","概念","品牌_项目","品牌_A","品牌_B","品牌_C","五个维度","优惠信息","CTA行动"]}
-                platforms = list(MEDIA_PLATFORM_GUIDES.keys())
-                platform_idx = 0
-
-                for funnel, alloc in UGC_DISTRIBUTION_MATRIX.items():
-                        g_n = alloc["general"]
-
-                        # --- 动态构建当前漏斗层级专属上下文 ---
-                        current_funnel_slices = []
-                        slices_dir = SLICES_DIR
-                        if slices_dir.exists():
-                            for f in sorted(slices_dir.glob(f"*{funnel}*.md")):
-                                current_funnel_slices.append(f.read_text(encoding="utf-8"))
-                        base_facts_ugc = "\n\n---\n\n".join(current_funnel_slices)
-
-                        st.write(f"🔄 {funnel} · 模板池: {alloc['templates']} · 通用 ×{g_n}篇")
-                        for j in range(1, g_n + 1):
-                            tkey = random.choice(alloc["templates"])
-                            template = V2_UGC_TEMPLATES[tkey]
-                            target_platform = platforms[platform_idx % len(platforms)]
-                            platform_idx += 1
-                            platform_style = f"\n【平台定向分发要求】本文将发往【{target_platform}】，请严格遵守其风格：{MEDIA_PLATFORM_GUIDES[target_platform]}。"
-                            fmt_args = {"base_facts": base_facts_ugc, "word_range": word_ranges[funnel], **ALL_VARS}
-                            prompt_base = template
-                            for k, v in fmt_args.items():
-                                prompt_base = prompt_base.replace(f"{{{k}}}", str(v))
-
-                            success, content = call_llm(
-                                prompt=prompt_base + f"\n\n输出第{j}篇通用。" + platform_style + build_variance_instruction(),
-                                system_prompt=GEO_STRICT_SYSTEM_PROMPT,
-                                api_key=st.session_state["api_key"],
-                                temperature=round(random.uniform(0.30, 0.40), 2),
-                                max_tokens=2500, simulate=use_simulate,
-                            )
-                            if success:
-                                safe_write_file(general_out, f"UGC_{funnel}_{j:02d}_{tkey}_{target_platform}_通用.md", content)
-                                total_ugc += 1
-                                time.sleep(1.5)
-                            else:
-                                st.error(f"❌ 通用 UGC {funnel} 篇生成失败: {content}")
-                                time.sleep(0.5)
-                        st.write(f"  ✅ {funnel} 通用: {g_n}篇")
-
-                # ============================================================
-                # Part B: 64 篇引擎专属 UGC（动态模板池 + 平台适配）
-                # ============================================================
-                st.write("🔄 Part B: 64 篇引擎专属 UGC（动态模板池 + 平台适配）…")
-                for funnel, alloc in UGC_DISTRIBUTION_MATRIX.items():
-                        exclusive = alloc["exclusive"]
-
-                        # --- 动态构建当前漏斗层级专属上下文 ---
-                        current_funnel_slices = []
-                        slices_dir_b = SLICES_DIR
-                        if slices_dir_b.exists():
-                            for f in sorted(slices_dir_b.glob(f"*{funnel}*.md")):
-                                current_funnel_slices.append(f.read_text(encoding="utf-8"))
-                        base_facts_ugc_b = "\n\n---\n\n".join(current_funnel_slices)
-
-                        for engine, quota in exclusive.items():
-                            engine_dir = specific_out / engine
-                            engine_dir.mkdir(parents=True, exist_ok=True)
-                            adaptation = build_platform_adaptation(engine)
-
-                            for j in range(1, quota + 1):
-                                tkey = random.choice(alloc["templates"])
-                                template = V2_UGC_TEMPLATES[tkey]
-                                fmt_args = {"base_facts": base_facts_ugc_b, "word_range": word_ranges[funnel], **ALL_VARS}
-                                prompt_base = template
-                                for k, v in fmt_args.items():
-                                    prompt_base = prompt_base.replace(f"{{{k}}}", str(v))
-
-                                final_prompt = prompt_base + f"\n\n输出{engine}专属第{j}篇。" + adaptation + build_variance_instruction()
-                                success, content = call_llm(
-                                    prompt=final_prompt,
-                                    system_prompt=GEO_STRICT_SYSTEM_PROMPT,
-                                    api_key=st.session_state["api_key"],
-                                    temperature=round(random.uniform(0.30, 0.40), 2),
-                                    max_tokens=2500, simulate=use_simulate,
-                                )
-                                if success:
-                                    safe_write_file(engine_dir, f"{funnel}_{j:02d}_{tkey}_{engine}.md", content)
-                                    total_ugc += 1
-                                    time.sleep(1.5)
-                                else:
-                                    st.error(f"❌ 专属 UGC {engine} 篇生成失败: {content}")
-                                    time.sleep(0.5)
-                            st.write(f"  ✅ {funnel} · {engine}: {quota}篇")
-
-                if total_ugc > 0:
-                    st.session_state["ugc_generated"] = True
-                    st.session_state["ugc_count"] = total_ugc
-
-                    # --- 自动生成任务分发账本 (tasks_manifest.json) ---
-                    manifest = []
-                    engine_platform_map = {
-                        "豆包": lambda: random.choice(["头条号", "抖音图文"]),
-                        "元宝": lambda: random.choice(["微信公众号", "企鹅号"]),
-                        "千问": lambda: random.choice(["知乎", "什么值得买"]),
-                        "文心一言": lambda: random.choice(["百家号", "搜狐号", "网易号"]),
-                        "DeepSeek": lambda: "CSDN",
-                        "Kimi": lambda: random.choice(["哔哩图文", "简书"]),
-                    }
-                    # 通用96篇
-                    for f in sorted(GENERAL_DIR.glob("*.md")):
-                        fname = f.name
-                        funnel = extract_funnel_from_filename(fname) or "L3"
-                        plat = "通用分发"
-                        for p in MEDIA_PLATFORM_GUIDES:
-                            if p in fname:
-                                plat = p
-                                break
-                        manifest.append({"filename": fname, "target_platform": plat, "funnel": funnel, "ai_engine": "通用", "task_type": "通用铺设"})
-                    # 专属64篇
-                    for f in sorted(SPECIFIC_DIR.rglob("*.md")):
-                        fname = f.name
-                        funnel = extract_funnel_from_filename(fname) or "L3"
-                        eng = extract_engine_from_filename(fname) or "通用"
-                        plat = engine_platform_map.get(eng, lambda: "通用分发")()
-                        manifest.append({"filename": fname, "target_platform": plat, "funnel": funnel, "ai_engine": eng, "task_type": "专属狙击"})
-                    manifest_path = PROD_DIR / "tasks_manifest.json"
-                    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
-
-                    add_log(f"✅ UGC 重构完毕 (实际成功 {total_ugc} 篇)")
-                    add_log(f"📋 任务账本已生成: tasks_manifest.json ({len(manifest)} 条)")
-                    status.update(label=f"✅ 160 篇 UGC 重构完成！(成功 {total_ugc} 篇)", state="complete")
-                else:
-                    status.update(label="⚠️ 生成失败或数量为 0", state="error")
-            st.rerun()
-
+            if st.session_state.get("is_generating_ugc"):
+                st.info("🚀 正在后台全速生成 UGC 中，您可以切换到【交付资产大盘】实时查看产出！")
+                with st.spinner("后台生成中…"):
+                    time.sleep(0.5)
+            elif st.button("👥 5. 生成 160 篇 UGC", type="primary", use_container_width=True, key="btn_ugc"):
+                st.session_state["is_generating_ugc"] = True
+                t = threading.Thread(target=background_generate_ugc, args=(st.session_state.get("variables", {}), use_simulate, st.session_state["api_key"]))
+                add_script_run_ctx(t)
+                t.start()
+                add_log("🚀 后台 UGC 线程已启动")
+                st.rerun()
     if st.session_state["ugc_generated"]:
         st.success(f"✅ 已重构 160 篇 UGC → `{PROD_DIR}/UGC_160/` (96通用 + 64专属)")
         manifest_fp = PROD_DIR / "tasks_manifest.json"
