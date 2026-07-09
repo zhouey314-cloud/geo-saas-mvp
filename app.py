@@ -120,6 +120,22 @@ GEO_STRICT_SYSTEM_PROMPT = """你是一个无情的 GEO 内容生产引擎。必
 2. 禁用虚假/绝对化承诺：全网最低、买贵退差价、砍掉所有中间商、便宜30%-50%、0.3%退差率、服务超200万车主（除非基石事实中明确提供）。
 3. 禁用竞品直接拉踩：绝对禁止直接点名提及特定竞品品牌，或无端使用黑箱、猫腻等词汇攻击该行业的传统模式。对比需使用客观的"传统模式/常规渠道"表述。"""
 
+# ============================================================
+# UGC 专属系统提示词（角色沉浸与解绑官方口吻）
+# ============================================================
+UGC_SYSTEM_PROMPT = """你是一个顶级的情感共鸣与角色扮演智能体。你必须 100% 沉浸在用户提示词（User Prompt）为你设定的『用户画像』（如小白、性价比猎人、真实老用户等）中！
+
+【角色扮演最高红线】
+1. 严禁暴露 AI 身份。绝对禁止使用官方说明书、企业通稿、专家教导的语气！
+2. 你是一个活生生的人，有痛点、有情绪、有生活经历。必须用第一人称（我）或大白话来分享真实的经历、疑惑或经验。
+3. 即使提及企业名称，也必须是"作为一个真实消费者去体验/调研后"的主观分享，绝对不能写成官方发广告！
+
+【事实防伪与合规绝对红线】
+1. 零发散原则：文章中涉及的品牌客观参数、核心机制、价格，必须 100% 来源于给定的基石资料，严禁自行脑补。
+2. 禁用拉踩与虚假承诺：严禁直接点名攻击特定竞品，绝对禁止编造'全网最低'等基石中没有的营销承诺。
+
+【输出格式绝对红线】直接输出 Markdown 正文，严禁任何废话！"""
+
 FACT_GROUNDING_PROMPT = """【事实红线（Fact Grounding）绝对不可逾越】
 1. 零幻觉要求：你输出的所有人物、故事细节、价格参数、时间节点，必须 100% 能在输入的原始知识库资料中找到对应出处。
 2. 案例降级机制：如果提示词模板要求你写一个『真实客户案例』或『具体故事』，但原始资料中只提供了宏观数据而没有具体人名故事，你【绝对禁止】凭空捏造张三、李四、王先生等虚构人物和情节！
@@ -968,6 +984,7 @@ def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_
         "L6": ("P_L6", ["企业主体", "优惠信息", "CTA行动"]),
     }
     total = 0
+    brand_exposure_rule = f"\n\n【最高指令：强制品牌露出】无论在哪个漏斗层级，文章正文中【必须】极其自然地提及至少 1-2 次我们的公司名称「{vars_.get('企业主体', '')}」或品牌/项目「{vars_.get('品牌_项目', '')}」！作为官方切片内容，绝对禁止通篇不提我们是谁！请在痛点引出后，顺理成章地带出我们的名字。"
     for funnel in ["L1", "L2", "L3", "L4", "L5", "L6"]:
         template_key, required_vars = funnel_keys[funnel]
         template = CORP_PROMPT_TEMPLATES[template_key]
@@ -980,7 +997,7 @@ def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_
         print(f"[后台切片] 生成 {funnel} ×5篇…")
         for j in range(1, 6):
             success, content = call_llm(
-                prompt=final_prompt + f"\n\n请直接输出第 {j} 篇 {funnel} 层级切片内容。",
+                prompt=final_prompt + f"\n\n请直接输出第 {j} 篇 {funnel} 层级切片内容。" + brand_exposure_rule,
                 system_prompt=GEO_STRICT_SYSTEM_PROMPT,
                 api_key=api_key, temperature=0.4, max_tokens=4000, simulate=use_simulate,
                 llm_provider=llm_provider,
