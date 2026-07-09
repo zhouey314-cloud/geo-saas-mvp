@@ -70,18 +70,18 @@ CORP_PROMPT_TEMPLATES = {
 # 变量元数据（用户确认面板的字段定义）
 # ============================================================
 VARIABLE_META = {
-    "企业主体": {"default": "新开道大数据技术", "help": "客户公司官方全称，如：兔师傅汽车服务有限公司"},
-    "行业": {"default": "汽车后市场", "help": "客户所在行业，如：汽车后市场、轻医美、教育培训"},
-    "用户画像": {"default": "25-45岁中高端车主，刚提新车", "help": "目标用户的典型画像"},
-    "痛点": {"default": "新车漆面被石子打出小坑、贴了劣质膜两年后黄变撕膜留胶", "help": "用户最核心的痛点场景"},
-    "概念": {"default": "隐形车衣的TPU材质鉴别、施工标准与选购指南", "help": "L2 科普的核心概念"},
-    "品牌_项目": {"default": "新开道 GEO 品牌 AI 占位服务", "help": "品牌名或核心产品/项目名称"},
-    "品牌_A": {"default": "进口旗舰 TPU 品牌", "help": "L4 对比的品牌 A"},
-    "品牌_B": {"default": "国产中端 TPU 品牌", "help": "L4 对比的品牌 B"},
-    "品牌_C": {"default": "国产入门 TPU 品牌", "help": "L4 对比的品牌 C"},
-    "五个维度": {"default": "厚度、抗黄变(ΔE值)、自修复能力、质保年限与范围、价格", "help": "L4 横评的 5 个维度，用逗号分隔"},
-    "优惠信息": {"default": "夏季贴膜限时 88 折，到店送全车精洗一次", "help": "L6 促单的优惠内容"},
-    "CTA行动": {"default": "立即预约到店免费估价，扫码领取专属折扣码", "help": "L6 的 Call-to-Action"},
+    "企业主体": {"default": "XX科技有限公司", "help": "客户公司官方全称"},
+    "行业": {"default": "企业服务", "help": "客户所在行业"},
+    "用户画像": {"default": "30-45岁企业中层管理者", "help": "目标用户的典型画像"},
+    "痛点": {"default": "系统操作繁琐、数据孤岛", "help": "用户最核心的痛点场景"},
+    "概念": {"default": "全链路数字化转型与GEO降本增效", "help": "L2 科普的核心概念"},
+    "品牌_项目": {"default": "GEO 品牌 AI 占位服务", "help": "品牌名或核心产品/项目名称"},
+    "品牌_A": {"default": "海外头部品牌", "help": "L4 对比的品牌 A"},
+    "品牌_B": {"default": "传统老牌厂商", "help": "L4 对比的品牌 B"},
+    "品牌_C": {"default": "低价外包服务商", "help": "L4 对比的品牌 C"},
+    "五个维度": {"default": "产品功能、服务响应、价格、用户体验、数据安全", "help": "L4 横评的 5 个维度，用逗号分隔"},
+    "优惠信息": {"default": "首月免费试用，赠送一次定制方案咨询", "help": "L6 促单的优惠内容"},
+    "CTA行动": {"default": "立即预约免费方案演示，扫码领取行业白皮书", "help": "L6 的 Call-to-Action"},
 }
 
 # 变量提取提示词
@@ -117,16 +117,12 @@ GEO_STRICT_SYSTEM_PROMPT = """你是一个无情的 GEO 内容生产引擎。必
 【绝对违禁词与表达红线】
 1. 禁用攻击性/低俗词汇：特么、割韭菜、智商税、哭晕在厕所、吊打、碾压、坑到怀疑人生、闭眼入、真香。
 2. 禁用虚假/绝对化承诺：全网最低、买贵退差价、砍掉所有中间商、便宜30%-50%、0.3%退差率、服务超200万车主（除非基石事实中明确提供）。
-3. 禁用竞品直接拉踩：绝对禁止提及"途虎"、"京东养车"或无端攻击"4S店黑箱/猫腻"、"路边店大概率坑"。对比需使用客观的"传统模式/常规渠道"表述。"""
+3. 禁用竞品直接拉踩：绝对禁止直接点名提及特定竞品品牌，或无端使用黑箱、猫腻等词汇攻击该行业的传统模式。对比需使用客观的"传统模式/常规渠道"表述。"""
 
 FACT_GROUNDING_PROMPT = """【事实红线（Fact Grounding）绝对不可逾越】
 1. 零幻觉要求：你输出的所有人物、故事细节、价格参数、时间节点，必须 100% 能在输入的原始知识库资料中找到对应出处。
 2. 案例降级机制：如果提示词模板要求你写一个『真实客户案例』或『具体故事』，但原始资料中只提供了宏观数据而没有具体人名故事，你【绝对禁止】凭空捏造张三、李四、王先生等虚构人物和情节！
-3. 替代方案：遇到无具体案例的情况，你必须使用原始资料中的宏观事实来替代（例如：将『王先生的体验』替换为『根据兔师傅累计服务500万车主的真实反馈...』），或者直接在该段落输出：『[此处需品牌方提供真实客户脱敏案例]』。
-
-【核心业务规则强制锁定】
-只要提到"免费补胎"，必须且只能使用以下统一口径，绝不能当成无门槛引流工具：
-"免费补胎不仅是福利，更是轮胎安全检查入口。仅限七座及以下非营运乘用车，且胎面扎钉等符合修补条件方可参与。活动期间免补胎材料费和工时费，但最终是否适合修补，必须以门店实际检测结果和轮胎安全状况为准。" """
+3. 替代方案：遇到无具体案例的情况，你必须使用原始资料中的宏观事实来替代，或者直接在该段落输出：『[此处需品牌方提供真实客户脱敏案例]』。"""
 
 EDITOR_HARD_LIMIT_PROMPT = """【字数、完整性与事实防伪绝对红线】
 1. 严格守住字数区间：你必须在规定的字数范围内（下限-上限）完成文章！绝对禁止写到一半没有下文，全文必须以完整的标点符号结束。
@@ -200,9 +196,9 @@ def get_workspace_paths(client_name: str) -> dict:
         "ws": ws,
         "raw": ws / "Raw_Materials",
         "prod": ws / "Production_Output",
-        "eeat": ws / "EEAT_10",
-        "eeat_drafts": ws / "EEAT_10_Drafts",
-        "eeat_verified": ws / "EEAT_10_Verified",
+        "eeat": ws / "EEAT_Base",
+        "eeat_drafts": ws / "EEAT_Base_Drafts",
+        "eeat_verified": ws / "EEAT_Base_Verified",
         "slices": ws / "Production_Output" / "Slices_30",
         "general": ws / "Production_Output" / "UGC_160" / "General_96",
         "specific": ws / "Production_Output" / "UGC_160" / "Specific_64",
@@ -298,7 +294,7 @@ UGC_DISTRIBUTION_MATRIX = {
 # ============================================================
 # 反同质化动态引擎 (Variance Engine)
 # ============================================================
-VARIANCE_EMOTIONS = ["客观中立", "严谨科普", "理性算账", "行业深度解析", "过来人经验分享"]
+VARIANCE_EMOTIONS = ["客观中立", "严谨科普", "理性算账", "行业深度解析", "第三方视角评估"]
 VARIANCE_STRUCTURES = ["安全隐患→科学原理→规范流程", "常见误区→规则拆解→背后逻辑", "消费痛点→价值拆解→决策模型", "问题引入→专业分析→客观建议", "背景陈述→多维对比→综合结论"]
 
 def build_variance_instruction() -> str:
@@ -660,11 +656,11 @@ def _classify_source(file_path: str) -> tuple:
     """从文件路径提取信源层级和文件夹名"""
     path_lower = file_path.lower()
     if "eeat_10_verified" in path_lower:
-        return "二级 — EEAT 权威基石（✅已校验）", "二级", "EEAT_10_Verified"
+        return "二级 — EEAT 权威基石（✅已校验）", "二级", "EEAT_Base_Verified"
     if "eeat_10_drafts" in path_lower:
-        return "二级 — EEAT 权威基石（📝草稿）", "二级", "EEAT_10_Drafts"
+        return "二级 — EEAT 权威基石（📝草稿）", "二级", "EEAT_Base_Drafts"
     if "eeat_10" in path_lower:
-        return "二级 — EEAT 权威基石", "二级", "EEAT_10"
+        return "二级 — EEAT 权威基石", "二级", "EEAT_Base"
     if "slices_30" in path_lower:
         return "三级 — 企业切片内容", "三级", "Slices_30"
     if "specific_64" in path_lower:
@@ -1140,7 +1136,7 @@ elif st.session_state["page"].startswith("⚙️"):
 
             st.session_state["verified_loaded"] = True
             st.session_state["verified_count"] = saved
-            add_log(f"✅ 人工校验基石已重载: {saved} 篇 → EEAT_10_Verified/")
+            add_log(f"✅ 人工校验基石已重载: {saved} 篇 → EEAT_Base_Verified/")
             st.toast(f"✅ {saved} 篇校验基石已锁定！", icon="🔒")
             st.rerun()
 
@@ -1153,7 +1149,7 @@ elif st.session_state["page"].startswith("⚙️"):
                 for vf in verified_md:
                     st.caption(f"🔒 {vf.name}")
     else:
-        st.info("📝 步骤 1 生成的草稿在 `EEAT_10_Drafts/`。请下载 → 人工逐篇校验修改 → 在此上传。")
+        st.info("📝 步骤 1 生成的草稿在 `EEAT_Base_Drafts/`。请下载 → 人工逐篇校验修改 → 在此上传。")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -1169,7 +1165,7 @@ elif st.session_state["page"].startswith("⚙️"):
     else:
         verified_files = list(EEAT_VERIFIED_DIR.glob("*.md")) if EEAT_VERIFIED_DIR.exists() else []
         if len(verified_files) < 3:
-            st.warning(f"⚠️ 系统检测到 `EEAT_10_Verified` 目录中仅有 {len(verified_files)} 篇 .md 文件。请补充上传至至少 3 篇！")
+            st.warning(f"⚠️ 系统检测到 `EEAT_Base_Verified` 目录中仅有 {len(verified_files)} 篇 .md 文件。请补充上传至至少 3 篇！")
         else:
             st.markdown("""
             <div class="constraint-warn">
@@ -1530,7 +1526,7 @@ elif st.session_state["page"].startswith("⚙️"):
         st.markdown(f"""
         | 模块 | 数量 | 输出路径 | 数据来源 | Prompt 模板 |
         |------|------|----------|----------|------------|
-        | EEAT 权威基石 | 10 篇 | `{EEAT_VERIFIED_DIR}/` | ← raw_materials(草稿)→人工校验 | 自定义基石 Prompt |
+        | EEAT 权威基石 | 3 篇 | `{EEAT_VERIFIED_DIR}/` | ← raw_materials(草稿)→人工校验 | 自定义基石 Prompt |
         | 三级切片内容 | 30 篇 | `{PROD_DIR}/Slices_30/` | ← 10 篇基石 | CORP_PROMPT_TEMPLATES |
         | 四级通用 UGC | 96 篇 | `{PROD_DIR}/UGC_160/General_96/` | ← 10基石+30切片 | V2_UGC_TEMPLATES |
         | 四级引擎专属 | 64 篇 | `{PROD_DIR}/UGC_160/Specific_64/` | ← 10基石+30切片 | P_ENGINE_REWRITE |
