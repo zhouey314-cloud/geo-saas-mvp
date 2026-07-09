@@ -1,23 +1,3 @@
-"""
-新开道 GEO 最小交付单元 (MVP) · SaaS 自动化生产车间 v7.0 · 7月盛夏轮胎安全月
-================================================================
-核心升级:
-  1. 硬编码 CORP_PROMPT_TEMPLATES + V2_UGC_TEMPLATES — 双模板库视角隔离
-  2. 全局变量提取与确认 UI — 必经中间步骤，用户审核后才允许调用 API
-  3. .format() 强制字符串注入 — "没有变量注入，绝不调用 API"
-  4. 多格式文档解析: .txt .md .docx .pdf 全支持
-"""
-新开道 GEO 最小交付单元 (MVP) · SaaS 自动化生产车间 v7.0 · 7月盛夏轮胎安全月
-================================================================
-核心升级:
-  1. 硬编码 CORP_PROMPT_TEMPLATES + V2_UGC_TEMPLATES — 双模板库视角隔离
-  2. 全局变量提取与确认 UI — 必经中间步骤，用户审核后才允许调用 API
-  3. .format() 强制字符串注入 — "没有变量注入，绝不调用 API"
-  4. 多格式文档解析: .txt .md .docx .pdf 全支持
-
-运行方式: streamlit run app.py
-"""
-
 import streamlit as st
 import os, re, json, base64, time, random
 from pathlib import Path
