@@ -747,6 +747,7 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
     """后台线程：重构 160 篇四级 UGC（不依赖 st.session_state）"""
     word_ranges = {"L1": "300-500", "L2": "800-1500", "L3": "1500-2500", "L4": "2000-3500", "L5": "1000-2000", "L6": "500-1000"}
     ALL_VARS = {k: vars_.get(k, "") for k in ["行业", "用户画像", "痛点", "概念", "品牌_项目", "品牌_A", "品牌_B", "品牌_C", "五个维度", "优惠信息", "CTA行动"]}
+    brand_exposure_rule = f"\n\n【最高指令：强制品牌露出】无论你采用什么视角和语气，文章正文中【必须】自然提及至少 1-2 次我们的公司名称「{vars_.get('企业主体', '')}」或品牌名称「{vars_.get('品牌_项目', '')}」！绝对禁止通篇不提我们是谁！"
     general_out = GENERAL_DIR; specific_out = SPECIFIC_DIR
     general_out.mkdir(parents=True, exist_ok=True); specific_out.mkdir(parents=True, exist_ok=True)
     total_ugc = 0
@@ -773,7 +774,7 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
             for k, v in fmt_args.items():
                 prompt_base = prompt_base.replace(f"{{{k}}}", str(v))
             success, content = call_llm(
-                prompt=prompt_base + f"\n\n输出第{j}篇通用。" + platform_style + build_variance_instruction(),
+                prompt=prompt_base + f"\n\n输出第{j}篇通用。" + platform_style + build_variance_instruction() + brand_exposure_rule,
                 system_prompt=GEO_STRICT_SYSTEM_PROMPT, api_key=api_key,
                 temperature=round(random.uniform(0.30, 0.40), 2), max_tokens=2500, simulate=use_simulate,
                 llm_provider=llm_provider,
@@ -803,7 +804,7 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
                 prompt_base = template
                 for k, v in fmt_args.items():
                     prompt_base = prompt_base.replace(f"{{{k}}}", str(v))
-                final_prompt = prompt_base + f"\n\n输出{engine}专属第{j}篇。" + adaptation + build_variance_instruction()
+                final_prompt = prompt_base + f"\n\n输出{engine}专属第{j}篇。" + adaptation + build_variance_instruction() + brand_exposure_rule
                 success, content = call_llm(
                     prompt=final_prompt, system_prompt=GEO_STRICT_SYSTEM_PROMPT, api_key=api_key,
                     temperature=round(random.uniform(0.30, 0.40), 2), max_tokens=2500, simulate=use_simulate,
