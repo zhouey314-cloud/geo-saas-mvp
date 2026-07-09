@@ -310,6 +310,25 @@ def build_variance_instruction() -> str:
     )
 
 
+# ============================================================
+# 12 大媒体平台风格指南（96 篇通用内容分发用）
+# ============================================================
+MEDIA_PLATFORM_GUIDES = {
+    "抖音图文": "精简短句、痛点前置、适合竖屏阅读的口语化文案",
+    "头条号": "客观资讯体、标题信息量大、段落清晰",
+    "微信公众号": "深度推文风格、娓娓道来、适合私域用户阅读",
+    "企鹅号": "泛生活资讯风格、贴近民生体验",
+    "知乎": "专业问答干货、逻辑极其严密、数据驱动",
+    "什么值得买": "硬核消费测评、强调参数对比与真实避坑",
+    "百家号": "百度搜索百科风、专业名词解析详尽、权威科普",
+    "搜狐号": "新闻报道风格、中立客观、层次分明",
+    "网易号": "热点评论风格、带有理性的社会共鸣",
+    "CSDN": "技术极客风格、点列式说明、硬核机理分析",
+    "哔哩图文": "年轻化社区表达、图文并茂的测评感、专业但不枯燥",
+    "简书": "真实体验随笔、重在客观历程的分享",
+}
+
+
 def build_platform_adaptation(engine_name: str) -> str:
     """生成平台专属改写指令"""
     guides = {
@@ -1288,10 +1307,12 @@ elif st.session_state["page"].startswith("⚙️"):
                 }
 
                     # ============================================================
-                # Part A: 96 篇通用 UGC（动态模板池）
+                # Part A: 96 篇通用 UGC（12平台分发）
                 # ============================================================
-                st.write("🔄 Part A: 96 篇通用 UGC（动态模板池）…")
+                st.write("🔄 Part A: 96 篇通用 UGC（12平台风格分发）…")
                 ALL_VARS = {k: vars_.get(k, "") for k in ["行业","用户画像","痛点","概念","品牌_项目","品牌_A","品牌_B","品牌_C","五个维度","优惠信息","CTA行动"]}
+                platforms = list(MEDIA_PLATFORM_GUIDES.keys())
+                platform_idx = 0
 
                 for funnel, alloc in UGC_DISTRIBUTION_MATRIX.items():
                         g_n = alloc["general"]
@@ -1308,20 +1329,23 @@ elif st.session_state["page"].startswith("⚙️"):
                         for j in range(1, g_n + 1):
                             tkey = random.choice(alloc["templates"])
                             template = V2_UGC_TEMPLATES[tkey]
+                            target_platform = platforms[platform_idx % len(platforms)]
+                            platform_idx += 1
+                            platform_style = f"\n【平台定向分发要求】本文将发往【{target_platform}】，请严格遵守其风格：{MEDIA_PLATFORM_GUIDES[target_platform]}。"
                             fmt_args = {"base_facts": base_facts_ugc, "word_range": word_ranges[funnel], **ALL_VARS}
                             prompt_base = template
                             for k, v in fmt_args.items():
                                 prompt_base = prompt_base.replace(f"{{{k}}}", str(v))
 
                             success, content = call_llm(
-                                prompt=prompt_base + f"\n\n输出第{j}篇通用。" + build_variance_instruction(),
+                                prompt=prompt_base + f"\n\n输出第{j}篇通用。" + platform_style + build_variance_instruction(),
                                 system_prompt=GEO_STRICT_SYSTEM_PROMPT,
                                 api_key=st.session_state["api_key"],
                                 temperature=round(random.uniform(0.30, 0.40), 2),
                                 max_tokens=2500, simulate=use_simulate,
                             )
                             if success:
-                                safe_write_file(general_out, f"UGC_{funnel}_{j:02d}_{tkey}_通用.md", content)
+                                safe_write_file(general_out, f"UGC_{funnel}_{j:02d}_{tkey}_{target_platform}_通用.md", content)
                                 total_ugc += 1
                                 time.sleep(1.5)
                             else:
@@ -1377,7 +1401,39 @@ elif st.session_state["page"].startswith("⚙️"):
                 if total_ugc > 0:
                     st.session_state["ugc_generated"] = True
                     st.session_state["ugc_count"] = total_ugc
+
+                    # --- 自动生成任务分发账本 (tasks_manifest.json) ---
+                    manifest = []
+                    engine_platform_map = {
+                        "豆包": lambda: random.choice(["头条号", "抖音图文"]),
+                        "元宝": lambda: random.choice(["微信公众号", "企鹅号"]),
+                        "千问": lambda: random.choice(["知乎", "什么值得买"]),
+                        "文心一言": lambda: random.choice(["百家号", "搜狐号", "网易号"]),
+                        "DeepSeek": lambda: "CSDN",
+                        "Kimi": lambda: random.choice(["哔哩图文", "简书"]),
+                    }
+                    # 通用96篇
+                    for f in sorted(GENERAL_DIR.glob("*.md")):
+                        fname = f.name
+                        funnel = extract_funnel_from_filename(fname) or "L3"
+                        plat = "通用分发"
+                        for p in MEDIA_PLATFORM_GUIDES:
+                            if p in fname:
+                                plat = p
+                                break
+                        manifest.append({"filename": fname, "target_platform": plat, "funnel": funnel, "ai_engine": "通用", "task_type": "通用铺设"})
+                    # 专属64篇
+                    for f in sorted(SPECIFIC_DIR.rglob("*.md")):
+                        fname = f.name
+                        funnel = extract_funnel_from_filename(fname) or "L3"
+                        eng = extract_engine_from_filename(fname) or "通用"
+                        plat = engine_platform_map.get(eng, lambda: "通用分发")()
+                        manifest.append({"filename": fname, "target_platform": plat, "funnel": funnel, "ai_engine": eng, "task_type": "专属狙击"})
+                    manifest_path = PROD_DIR / "tasks_manifest.json"
+                    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+
                     add_log(f"✅ UGC 重构完毕 (实际成功 {total_ugc} 篇)")
+                    add_log(f"📋 任务账本已生成: tasks_manifest.json ({len(manifest)} 条)")
                     status.update(label=f"✅ 160 篇 UGC 重构完成！(成功 {total_ugc} 篇)", state="complete")
                 else:
                     status.update(label="⚠️ 生成失败或数量为 0", state="error")
@@ -1385,6 +1441,10 @@ elif st.session_state["page"].startswith("⚙️"):
 
     if st.session_state["ugc_generated"]:
         st.success(f"✅ 已重构 160 篇 UGC → `{PROD_DIR}/UGC_160/` (96通用 + 64专属)")
+        manifest_fp = PROD_DIR / "tasks_manifest.json"
+        if manifest_fp.exists():
+            with open(manifest_fp, "r", encoding="utf-8") as mf:
+                st.download_button("📋 下载任务分发账本 (tasks_manifest.json)", data=mf.read(), file_name="tasks_manifest.json", mime="application/json")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
