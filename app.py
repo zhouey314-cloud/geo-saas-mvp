@@ -1489,59 +1489,66 @@ if st.session_state["page"].startswith("📊"):
                     if st.button("🔍", key=f"pv_{i}_{a['filename'][:12]}", help="预览"):
                         st.session_state["selected_path"]=a["path"]; st.session_state["selected_content"]=a["content"]; st.session_state["selected_title"]=a["title"]; st.session_state["selected_filename"]=a["filename"]; st.rerun()
 
-            if checked_paths:
-                export_format = st.selectbox("📦 导出格式选择", ["Markdown (.md)", "Word (.docx)"], key="export_format")
-                col_dl, col_del = st.columns(2)
-                with col_dl:
-                    zip_buffer = io.BytesIO()
-                    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
-                        for cp in checked_paths:
-                            try:
-                                content = open(cp, "r", encoding="utf-8").read()
-                                if export_format == "Word (.docx)":
-                                    zf.writestr(Path(cp).name.replace(".md", ".docx"), convert_md_to_docx_bytes(content))
-                                else:
-                                    zf.writestr(Path(cp).name, content.encode("utf-8"))
-                            except Exception:
-                                pass
-                    zip_buffer.seek(0)
-                    zip_name = f"GEO_交付资产打包_{'docx' if 'Word' in export_format else 'md'}.zip"
-                    st.download_button(
-                        f"📥 批量下载 ({len(checked_paths)} 篇 ZIP)",
-                        data=zip_buffer,
-                        file_name=zip_name,
-                        mime="application/zip",
-                        use_container_width=True,
-                    )
-                with col_del:
-                    if st.button("🗑️ 批量彻底删除", type="primary", use_container_width=True, key="btn_bulk_del"):
-                        deleted = 0
-                        for cp in checked_paths:
-                            try:
-                                Path(cp).unlink(missing_ok=True)
-                                deleted += 1
-                            except Exception:
-                                pass
-                        st.toast(f"✅ 成功删除 {deleted} 篇文章！", icon="🗑️")
-                        st.rerun()
+            st.session_state["checked_paths"] = checked_paths
         if not fa:
             st.info("无匹配文章")
 
     with pc:
         st.markdown("### 📖 内容预览")
+
+        # --- 批量操作区 ---
+        checked_paths = st.session_state.get("checked_paths", [])
+        if checked_paths:
+            st.markdown("##### 📦 批量操作区")
+            col_fmt, col_dl, col_del = st.columns([1.5, 1.5, 1.2])
+            with col_fmt:
+                export_format = st.selectbox("导出格式", ["Markdown (.md)", "Word (.docx)"], key="export_format", label_visibility="collapsed")
+            with col_dl:
+                zip_buffer = io.BytesIO()
+                with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+                    for cp in checked_paths:
+                        try:
+                            content = open(cp, "r", encoding="utf-8").read()
+                            if export_format == "Word (.docx)":
+                                zf.writestr(Path(cp).name.replace(".md", ".docx"), convert_md_to_docx_bytes(content))
+                            else:
+                                zf.writestr(Path(cp).name, content.encode("utf-8"))
+                        except Exception:
+                            pass
+                zip_buffer.seek(0)
+                zip_name = f"GEO_交付资产打包_{'docx' if 'Word' in export_format else 'md'}.zip"
+                st.download_button(
+                    f"📥 批量下载 ({len(checked_paths)} 篇)",
+                    data=zip_buffer,
+                    file_name=zip_name,
+                    mime="application/zip",
+                    use_container_width=True,
+                )
+            with col_del:
+                if st.button("🗑️ 批量彻底删除", type="primary", use_container_width=True, key="btn_bulk_del"):
+                    deleted = 0
+                    for cp in checked_paths:
+                        try:
+                            Path(cp).unlink(missing_ok=True)
+                            deleted += 1
+                        except Exception:
+                            pass
+                    st.session_state["checked_paths"] = []
+                    st.toast(f"✅ 成功删除 {deleted} 篇文章！", icon="🗑️")
+                    st.rerun()
+            st.markdown("---")
+
         if st.session_state["selected_content"]:
             st.markdown(f"**{st.session_state['selected_title']}**")
             st.caption(f"`{st.session_state['selected_filename']}`")
-            b1, b2, b3 = st.columns([1.2, 1, 1])
+            b1, b2 = st.columns(2)
             with b1:
-                if st.button("📋 一键复制全文", key="cp_main"): st.toast("✅ 请在下方文本框全选复制", icon="📋")
+                st.download_button(label="📥 下载单篇 (Markdown)", data=st.session_state["selected_content"].encode("utf-8"), file_name=st.session_state["selected_filename"], mime="text/markdown", use_container_width=True)
             with b2:
-                st.download_button(label="📥 下载 Markdown", data=st.session_state["selected_content"].encode("utf-8"), file_name=st.session_state["selected_filename"], mime="text/markdown", use_container_width=True)
-            with b3:
                 if DOCX_AVAILABLE:
                     docx_bytes = convert_md_to_docx_bytes(st.session_state["selected_content"])
                     docx_name = st.session_state["selected_filename"].replace(".md", ".docx")
-                    st.download_button(label="📥 下载 Word", data=docx_bytes, file_name=docx_name, mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True)
+                    st.download_button(label="📥 下载单篇 (Word)", data=docx_bytes, file_name=docx_name, mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True)
             with st.expander("📝 原始 Markdown", expanded=False): st.text_area("全选复制", value=st.session_state["selected_content"], height=250, label_visibility="collapsed")
             st.divider(); st.markdown(st.session_state["selected_content"])
         else:
