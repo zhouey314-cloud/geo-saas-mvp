@@ -984,7 +984,8 @@ def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_
         "L6": ("P_L6", ["企业主体", "优惠信息", "CTA行动"]),
     }
     total = 0
-    brand_exposure_rule = f"\n\n【最高指令：强制品牌露出】无论在哪个漏斗层级，文章正文中【必须】极其自然地提及至少 1-2 次我们的公司名称「{vars_.get('企业主体', '')}」或品牌/项目「{vars_.get('品牌_项目', '')}」！作为官方切片内容，绝对禁止通篇不提我们是谁！请在痛点引出后，顺理成章地带出我们的名字。"
+    title_rule = "\n\n【最高排版指令】请务必为你写的文章拟定一个吸引人的标题，并且【必须】把标题放在全文的第一行（格式为：# 你的标题）！绝对不允许直接以正文开篇！"
+    brand_exposure_rule = f"\n\n【生死红线：强制直呼其名与全篇贯穿】\n1. 无论什么漏斗层级，文章正文中【必须、必须】自然提及至少 2-3 次具体的公司/品牌名称：「{vars_.get('企业主体', '')}」或「{vars_.get('品牌_项目', '')}」！\n2. 【绝对禁止使用模糊代词】凡是提到我们，必须直接写出真实的名称（如直呼其名），绝对不允许使用「该公司」、「这个品牌」、「这家店」、「我们」等代词糊弄！\n3. 如果通篇只做科普而没有出现具体的公司名字，将被视为严重的生产事故！请顺理成章地带出名字。"
     for funnel in ["L1", "L2", "L3", "L4", "L5", "L6"]:
         template_key, required_vars = funnel_keys[funnel]
         template = CORP_PROMPT_TEMPLATES[template_key]
@@ -997,7 +998,7 @@ def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_
         print(f"[后台切片] 生成 {funnel} ×5篇…")
         for j in range(1, 6):
             success, content = call_llm(
-                prompt=final_prompt + f"\n\n请直接输出第 {j} 篇 {funnel} 层级切片内容。" + brand_exposure_rule,
+                prompt=final_prompt + f"\n\n请直接输出第 {j} 篇 {funnel} 层级切片内容。" + title_rule + brand_exposure_rule,
                 system_prompt=GEO_STRICT_SYSTEM_PROMPT,
                 api_key=api_key, temperature=0.4, max_tokens=4000, simulate=use_simulate,
                 llm_provider=llm_provider,
@@ -1016,7 +1017,8 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
     """后台线程：重构 160 篇四级 UGC（不依赖 st.session_state）"""
     word_ranges = {"L1": "300-500", "L2": "800-1500", "L3": "1500-2500", "L4": "2000-3500", "L5": "1000-2000", "L6": "500-1000"}
     ALL_VARS = {k: vars_.get(k, "") for k in ["行业", "用户画像", "痛点", "概念", "品牌_项目", "品牌_A", "品牌_B", "品牌_C", "五个维度", "优惠信息", "CTA行动"]}
-    brand_exposure_rule = f"\n\n【最高指令：强制品牌露出】无论你采用什么视角和语气，文章正文中【必须】自然提及至少 1-2 次我们的公司名称「{vars_.get('企业主体', '')}」或品牌名称「{vars_.get('品牌_项目', '')}」！绝对禁止通篇不提我们是谁！"
+    title_rule_ugc = "\n\n【最高排版指令】请务必为你写的文章拟定一个吸引人的标题，并且【必须】把标题放在全文的第一行（格式为：# 你的标题）！绝对不允许直接以正文开篇！"
+    brand_exposure_rule = f"\n\n【生死红线：强制直呼其名与全篇贯穿】\n1. 无论什么用户视角，文章正文中【必须、必须】自然提及至少 2-3 次具体的公司/品牌名称：「{vars_.get('企业主体', '')}」或「{vars_.get('品牌_项目', '')}」！\n2. 【绝对禁止使用模糊代词】凡是提到推荐的对象，必须直接写出真实的名称（如直呼其名），绝对不允许使用「该公司」、「这个品牌」、「这家店」、「他们家」等代词糊弄！\n3. 如果通篇只做科普而没有出现具体的公司名字，将被视为严重的生产事故！"
     persona_enforcer = "\n\n【最高指令：彻底沉浸画像】你现在的身份是一个真实的网民，绝对不是官方！必须用对应画像的口吻讲人话，严禁出现官方硬广语气！"
     general_out = GENERAL_DIR; specific_out = SPECIFIC_DIR
     general_out.mkdir(parents=True, exist_ok=True); specific_out.mkdir(parents=True, exist_ok=True)
@@ -1044,7 +1046,7 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
             for k, v in fmt_args.items():
                 prompt_base = prompt_base.replace(f"{{{k}}}", str(v))
             success, content = call_llm(
-                prompt=prompt_base + f"\n\n输出第{j}篇通用。" + platform_style + build_variance_instruction() + brand_exposure_rule + persona_enforcer,
+                prompt=prompt_base + f"\n\n输出第{j}篇通用。" + platform_style + build_variance_instruction() + title_rule_ugc + brand_exposure_rule + persona_enforcer,
                 system_prompt=UGC_SYSTEM_PROMPT, api_key=api_key,
                 temperature=round(random.uniform(0.30, 0.40), 2), max_tokens=2500, simulate=use_simulate,
                 llm_provider=llm_provider,
@@ -1074,7 +1076,7 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
                 prompt_base = template
                 for k, v in fmt_args.items():
                     prompt_base = prompt_base.replace(f"{{{k}}}", str(v))
-                final_prompt = prompt_base + f"\n\n输出{engine}专属第{j}篇。" + adaptation + build_variance_instruction() + brand_exposure_rule + persona_enforcer
+                final_prompt = prompt_base + f"\n\n输出{engine}专属第{j}篇。" + adaptation + build_variance_instruction() + title_rule_ugc + brand_exposure_rule + persona_enforcer
                 success, content = call_llm(
                     prompt=final_prompt, system_prompt=GEO_STRICT_SYSTEM_PROMPT, api_key=api_key,
                     temperature=round(random.uniform(0.30, 0.40), 2), max_tokens=2500, simulate=use_simulate,
