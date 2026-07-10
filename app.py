@@ -11,7 +11,7 @@
 """
 
 import streamlit as st
-import os, re, json, base64, time, random, threading
+import os, re, json, base64, time, random, threading, zipfile, io
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 from pathlib import Path
 from datetime import datetime
@@ -177,6 +177,8 @@ LONG_TEXT_GROUNDING_PROMPT = """【最高事实红线与长文本检索指令】
 # ============================================================
 # LLM 引擎 API 配置（双引擎热切换）
 # ============================================================
+DEFAULT_DEEPSEEK_API_KEY = "sk-ba6e2aac83ab4c90b4c937ff047ad59b"
+
 LLM_CONFIGS = {
     "DeepSeek": {
         "base_url": "https://api.deepseek.com",
@@ -866,6 +868,35 @@ def extract_text_from_upload(uploaded_file) -> Tuple[str, str]:
     return filename, f"\n\n> ⚠️ 不支持的文件格式: {suffix}\n"
 
 
+def convert_md_to_docx_bytes(md_content: str) -> bytes:
+    """将 Markdown 纯文本解析并转换为 DOCX 二进制流"""
+    if not DOCX_AVAILABLE:
+        return md_content.encode("utf-8")
+
+    doc = DocxDocument()
+    for line in md_content.split('\n'):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith('# '):
+            doc.add_heading(stripped.lstrip('# ').strip(), level=1)
+        elif stripped.startswith('## '):
+            doc.add_heading(stripped.lstrip('# ').strip(), level=2)
+        elif stripped.startswith('### '):
+            doc.add_heading(stripped.lstrip('# ').strip(), level=3)
+        elif stripped.startswith('- ') or stripped.startswith('* '):
+            doc.add_paragraph(stripped.lstrip('-* ').strip(), style='List Bullet')
+        elif stripped.startswith('> '):
+            p = doc.add_paragraph(stripped.lstrip('> ').strip())
+            p.style = 'Quote' if 'Quote' in [s.name for s in doc.styles] else 'Normal'
+        else:
+            doc.add_paragraph(stripped)
+
+    bio = io.BytesIO()
+    doc.save(bio)
+    return bio.getvalue()
+
+
 def sanitize_filename(name: str) -> str:
     """清洗文件名中的非法字符, 将 / \\ : * ? \" < > | 替换为 _"""
     illegal_chars = r'[\/\\:*?"<>|]'
@@ -997,10 +1028,19 @@ def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_
             final_prompt = final_prompt.replace(f"{{{k}}}", str(v))
         print(f"[后台切片] 生成 {funnel} ×5篇…")
         for j in range(1, 6):
+            # 强制每一篇寻找不同视角的防重复指令
+            angle_instruction = f"\n\n【多维视角与防原样照抄指令】这是本层级的第 {j}/5 篇文章。为了避免内容同质化，请你务必从下方的《基石素材》中挖掘【全新】的细节、案例或侧重点作为切入点！你必须对基石素材进行深度的重新组织和语言洗稿，使用全新的排版结构、标题和词汇。绝对不允许大面积原样复制粘贴基石中的整段文字！"
+
+            # 拼接最终 prompt，加入打乱器和强曝光规则
+            current_prompt = final_prompt + f"\n\n请直接输出第 {j} 篇 {funnel} 层级切片内容。" + title_rule + brand_exposure_rule + angle_instruction + build_variance_instruction()
+
             success, content = call_llm(
-                prompt=final_prompt + f"\n\n请直接输出第 {j} 篇 {funnel} 层级切片内容。" + title_rule + brand_exposure_rule,
+                prompt=current_prompt,
                 system_prompt=GEO_STRICT_SYSTEM_PROMPT,
-                api_key=api_key, temperature=0.4, max_tokens=4000, simulate=use_simulate,
+                api_key=api_key,
+                temperature=round(random.uniform(0.55, 0.75), 2), # 提高温度，增加重组文本的多样性
+                max_tokens=4000,
+                simulate=use_simulate,
                 llm_provider=llm_provider,
             )
             if success:
@@ -1272,15 +1312,25 @@ with st.sidebar:
 
     # --- 工作区选择（多租户隔离）---
     st.markdown("### 📁 项目工作区")
-    workspace_name = st.text_input(
-        "客户/项目名称",
-        value=DEFAULT_WORKSPACE,
-        placeholder="例如：兔师傅、XX汽车连锁",
-        help="输入客户名称以创建独立的工作区。所有文件将保存在 ./workspaces/{客户名称}/ 下，实现一客一档。",
-        key="workspace_input",
-    )
-    if not workspace_name.strip():
-        workspace_name = DEFAULT_WORKSPACE
+    # 扫描已有工作区
+    existing_workspaces = sorted([d.name for d in WORKSPACES_ROOT.iterdir() if d.is_dir()])
+    ws_options = ["➕ 新建项目..."] + existing_workspaces
+    # 尝试匹配当前选中项
+    current_idx = 0
+    if "workspace_name" in st.session_state:
+        try:
+            current_idx = ws_options.index(st.session_state["workspace_name"])
+        except ValueError:
+            current_idx = 0
+    selected_ws = st.selectbox("选择或新建项目", ws_options, index=current_idx, key="ws_selector")
+    if selected_ws == "➕ 新建项目...":
+        workspace_name = st.text_input("输入新项目名称", value="", placeholder="例如：兔师傅、XX汽车连锁", key="ws_new_input")
+        if workspace_name.strip():
+            workspace_name = workspace_name.strip()
+        else:
+            workspace_name = DEFAULT_WORKSPACE
+    else:
+        workspace_name = selected_ws
 
     # 同步当前工作区路径
     WSP = get_workspace_paths(workspace_name)
@@ -1336,9 +1386,14 @@ with st.sidebar:
     if state_key not in st.session_state:
         st.session_state[state_key] = ""
 
+    # DeepSeek 默认预填
+    default_val = st.session_state[state_key]
+    if not default_val and selected_llm == "DeepSeek":
+        default_val = DEFAULT_DEEPSEEK_API_KEY
+
     api_key_input = st.text_input(
         f"{selected_llm} API Key",
-        value=st.session_state[state_key],
+        value=default_val,
         type="password",
         placeholder="sk-xxxxxxxxxxxxxxxx",
     )
@@ -1412,29 +1467,80 @@ if st.session_state["page"].startswith("📊"):
     with lc:
         st.markdown("### 📋 文章列表")
         fa = [a for a in articles if (sel_src=="全部" or a["source_short"]==sel_src) and (sel_fun=="全部" or a["funnel"]==sel_fun) and (sel_eng=="全部" or a.get("engine","")==sel_eng)]
-        for i, a in enumerate(fa):
-            is_sel = st.session_state["selected_path"] == a["path"]
-            cc = "article-card selected" if is_sel else "article-card"
-            th = get_source_tag(a["source_short"])
-            if a["funnel"]: th += " " + get_funnel_tag(a["funnel"])
-            if a.get("engine") and a["engine"] not in ("通用","未知"): th += " " + get_engine_tag(a["engine"])
-            dt = a["title"][:55] + "…" if len(a["title"]) > 55 else a["title"]
-            ct, cb = st.columns([4,1])
-            with ct: st.markdown(f'<div class="{cc}"><div class="title">{dt}</div><div class="meta">{th} · {a["filename"][:35]}…</div></div>', unsafe_allow_html=True)
-            with cb:
-                if st.button("🔍", key=f"pv_{i}_{a['filename'][:12]}", help="预览"):
-                    st.session_state["selected_path"]=a["path"]; st.session_state["selected_content"]=a["content"]; st.session_state["selected_title"]=a["title"]; st.session_state["selected_filename"]=a["filename"]; st.rerun()
-        if not fa: st.info("无匹配文章")
+
+        # --- 批量下载 ZIP ---
+        if fa:
+            checked_paths = []
+            for i, a in enumerate(fa):
+                cols = st.columns([0.5, 3.5, 1])
+                with cols[0]:
+                    if st.checkbox("", key=f"chk_{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+                        checked_paths.append(a["path"])
+                with cols[1]:
+                    is_sel = st.session_state["selected_path"] == a["path"]
+                    cc = "article-card selected" if is_sel else "article-card"
+                    th = get_source_tag(a["source_short"])
+                    if a["funnel"]: th += " " + get_funnel_tag(a["funnel"])
+                    if a.get("engine") and a["engine"] not in ("通用","未知"): th += " " + get_engine_tag(a["engine"])
+                    dt = a["title"][:50] + "…" if len(a["title"]) > 50 else a["title"]
+                    st.markdown(f'<div class="{cc}"><div class="title">{dt}</div><div class="meta">{th} · {a["filename"][:30]}…</div></div>', unsafe_allow_html=True)
+                with cols[2]:
+                    if st.button("🔍", key=f"pv_{i}_{a['filename'][:12]}", help="预览"):
+                        st.session_state["selected_path"]=a["path"]; st.session_state["selected_content"]=a["content"]; st.session_state["selected_title"]=a["title"]; st.session_state["selected_filename"]=a["filename"]; st.rerun()
+
+            if checked_paths:
+                export_format = st.selectbox("📦 导出格式选择", ["Markdown (.md)", "Word (.docx)"], key="export_format")
+                col_dl, col_del = st.columns(2)
+                with col_dl:
+                    zip_buffer = io.BytesIO()
+                    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+                        for cp in checked_paths:
+                            try:
+                                content = open(cp, "r", encoding="utf-8").read()
+                                if export_format == "Word (.docx)":
+                                    zf.writestr(Path(cp).name.replace(".md", ".docx"), convert_md_to_docx_bytes(content))
+                                else:
+                                    zf.writestr(Path(cp).name, content.encode("utf-8"))
+                            except Exception:
+                                pass
+                    zip_buffer.seek(0)
+                    zip_name = f"GEO_交付资产打包_{'docx' if 'Word' in export_format else 'md'}.zip"
+                    st.download_button(
+                        f"📥 批量下载 ({len(checked_paths)} 篇 ZIP)",
+                        data=zip_buffer,
+                        file_name=zip_name,
+                        mime="application/zip",
+                        use_container_width=True,
+                    )
+                with col_del:
+                    if st.button("🗑️ 批量彻底删除", type="primary", use_container_width=True, key="btn_bulk_del"):
+                        deleted = 0
+                        for cp in checked_paths:
+                            try:
+                                Path(cp).unlink(missing_ok=True)
+                                deleted += 1
+                            except Exception:
+                                pass
+                        st.toast(f"✅ 成功删除 {deleted} 篇文章！", icon="🗑️")
+                        st.rerun()
+        if not fa:
+            st.info("无匹配文章")
 
     with pc:
         st.markdown("### 📖 内容预览")
         if st.session_state["selected_content"]:
             st.markdown(f"**{st.session_state['selected_title']}**")
             st.caption(f"`{st.session_state['selected_filename']}`")
-            b1, b2, _ = st.columns([1,1,2])
+            b1, b2, b3 = st.columns([1.2, 1, 1])
             with b1:
                 if st.button("📋 一键复制全文", key="cp_main"): st.toast("✅ 请在下方文本框全选复制", icon="📋")
-            with b2: st.markdown(make_download_link(st.session_state["selected_content"], st.session_state["selected_filename"]), unsafe_allow_html=True)
+            with b2:
+                st.download_button(label="📥 下载 Markdown", data=st.session_state["selected_content"].encode("utf-8"), file_name=st.session_state["selected_filename"], mime="text/markdown", use_container_width=True)
+            with b3:
+                if DOCX_AVAILABLE:
+                    docx_bytes = convert_md_to_docx_bytes(st.session_state["selected_content"])
+                    docx_name = st.session_state["selected_filename"].replace(".md", ".docx")
+                    st.download_button(label="📥 下载 Word", data=docx_bytes, file_name=docx_name, mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True)
             with st.expander("📝 原始 Markdown", expanded=False): st.text_area("全选复制", value=st.session_state["selected_content"], height=250, label_visibility="collapsed")
             st.divider(); st.markdown(st.session_state["selected_content"])
         else:
