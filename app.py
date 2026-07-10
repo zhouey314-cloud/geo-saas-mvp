@@ -1028,6 +1028,12 @@ def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_
             final_prompt = final_prompt.replace(f"{{{k}}}", str(v))
         print(f"[后台切片] 生成 {funnel} ×5篇…")
         for j in range(1, 6):
+            fname = f"Slice_{funnel}_{j:02d}_企业视角.md"
+            if (slices_out / fname).exists():
+                print(f"[后台切片] ⏩ {fname} 已存在，触发断点续传，跳过...")
+                total += 1
+                continue
+
             # 强制每一篇寻找不同视角的防重复指令
             angle_instruction = f"\n\n【多维视角与防原样照抄指令】这是本层级的第 {j}/5 篇文章。为了避免内容同质化，请你务必从下方的《基石素材》中挖掘【全新】的细节、案例或侧重点作为切入点！你必须对基石素材进行深度的重新组织和语言洗稿，使用全新的排版结构、标题和词汇。绝对不允许大面积原样复制粘贴基石中的整段文字！"
 
@@ -1044,7 +1050,6 @@ def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_
                 llm_provider=llm_provider,
             )
             if success:
-                fname = f"Slice_{funnel}_{j:02d}_企业视角.md"
                 safe_write_file(slices_out, fname, content)
                 total += 1
             else:
@@ -1076,6 +1081,13 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
                 current_funnel_slices.append(f.read_text(encoding="utf-8"))
         base_facts_ugc = "\n\n---\n\n".join(current_funnel_slices)
         for j in range(1, g_n + 1):
+            # 断点续传：检查是否已存在该序号文章
+            existing_files = list(general_out.glob(f"UGC_{funnel}_{j:02d}_*_通用.md"))
+            if existing_files:
+                print(f"[后台 UGC] ⏩ 通用 {funnel} 第 {j} 篇已存在，断点续传跳过...")
+                total_ugc += 1
+                continue
+
             tkey = random.choice(alloc["templates"])
             template = V2_UGC_TEMPLATES[tkey]
             target_platform = platforms[platform_idx % len(platforms)]
@@ -1110,6 +1122,13 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
             engine_dir = specific_out / engine; engine_dir.mkdir(parents=True, exist_ok=True)
             adaptation = build_platform_adaptation(engine)
             for j in range(1, quota + 1):
+                # 断点续传：检查是否已存在该序号专属文章
+                existing_files = list(engine_dir.glob(f"{funnel}_{j:02d}_*_{engine}.md"))
+                if existing_files:
+                    print(f"[后台 UGC] ⏩ 专属 {engine} {funnel} 第 {j} 篇已存在，断点续传跳过...")
+                    total_ugc += 1
+                    continue
+
                 tkey = random.choice(alloc["templates"])
                 template = V2_UGC_TEMPLATES[tkey]
                 fmt_args = {"base_facts": base_facts_ugc_b, "word_range": word_ranges[funnel], **ALL_VARS}
@@ -1847,6 +1866,16 @@ elif st.session_state["page"].startswith("⚙️"):
                 add_log("🚀 后台切片线程已启动")
                 st.rerun()
 
+    # --- 实时进度可视化 (切片) ---
+    if SLICES_DIR.exists():
+        slice_files = sorted(SLICES_DIR.glob("*.md"))
+        if slice_files:
+            with st.expander(f"📂 切片生成进度：已产出 {len(slice_files)} / 30 篇 (点击展开)", expanded=False):
+                if st.button("🔄 手动刷新进度", key="refresh_slices"):
+                    st.rerun()
+                for sf in slice_files:
+                    st.caption(f"📄 {sf.name}")
+
     if st.session_state["slices_generated"]:
         st.success(f"✅ 已裂变 30 篇三级切片 → `{PROD_DIR}/Slices_30/`")
 
@@ -1885,6 +1914,16 @@ elif st.session_state["page"].startswith("⚙️"):
                 t.start()
                 add_log("🚀 后台 UGC 线程已启动")
                 st.rerun()
+    # --- 实时进度可视化 (UGC) ---
+    if GENERAL_DIR.exists() or SPECIFIC_DIR.exists():
+        gen_ugc_files = sorted([f.name for f in GENERAL_DIR.glob("*.md")] + [f.name for f in SPECIFIC_DIR.rglob("*.md")])
+        if gen_ugc_files:
+            with st.expander(f"📂 UGC 生成进度：已产出 {len(gen_ugc_files)} / 160 篇 (点击展开)", expanded=False):
+                if st.button("🔄 手动刷新进度", key="refresh_ugc"):
+                    st.rerun()
+                for gf in gen_ugc_files:
+                    st.caption(f"📄 {gf}")
+
     if st.session_state["ugc_generated"]:
         st.success(f"✅ 已重构 160 篇 UGC → `{PROD_DIR}/UGC_160/` (96通用 + 64专属)")
         manifest_fp = PROD_DIR / "tasks_manifest.json"
