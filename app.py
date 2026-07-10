@@ -1383,20 +1383,21 @@ with st.sidebar:
     )
 
     state_key = f"api_key_{selected_llm}"
-    if state_key not in st.session_state:
-        st.session_state[state_key] = ""
 
-    # DeepSeek 默认预填
-    default_val = st.session_state[state_key]
-    if not default_val and selected_llm == "DeepSeek":
-        default_val = DEFAULT_DEEPSEEK_API_KEY
+    # 强制清理缓存机制：如果是 DeepSeek，并且当前缓存为空或者是旧的无效占位符，强行覆盖为真实的 API Key
+    cached_key = st.session_state.get(state_key, "")
+    if selected_llm == "DeepSeek" and (not cached_key or "sk-xxxx" in cached_key):
+        st.session_state[state_key] = DEFAULT_DEEPSEEK_API_KEY
+    elif state_key not in st.session_state:
+        st.session_state[state_key] = ""
 
     api_key_input = st.text_input(
         f"{selected_llm} API Key",
-        value=default_val,
+        value=st.session_state[state_key],
         type="password",
         placeholder="sk-xxxxxxxxxxxxxxxx",
     )
+
     if api_key_input != st.session_state[state_key]:
         st.session_state[state_key] = api_key_input
 
