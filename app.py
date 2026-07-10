@@ -1406,9 +1406,6 @@ with st.sidebar:
     if page != st.session_state["page"]: st.session_state["page"] = page; st.rerun()
 
     st.markdown("---")
-    st.caption("新开道大数据技术 © 2026")
-    st.caption("GEO 专家组 · v4.1 · Prompt 硬编码版")
-    st.caption(f"openai:{'✅' if OPENAI_AVAILABLE else '⚠️'} | docx:{'✅' if DOCX_AVAILABLE else '⚠️'} | pdf:{'✅' if PDF_AVAILABLE else '⚠️'}")
 
 
 # ============================================================
@@ -2051,15 +2048,3 @@ elif st.session_state["page"].startswith("⚙️"):
             st.json(st.session_state.get("variables", {}))
 
 
-# ============================================================
-# Footer
-# ============================================================
-st.divider()
-st.caption(
-    f"新开道大数据技术 · GEO SaaS 自动化生产车间 v4.1 · 多租户隔离 · "
-    f"双模板库: CORP({len(CORP_PROMPT_TEMPLATES)}) + UGC({len(V2_UGC_TEMPLATES)}) · "
-    f".format() 强制变量注入 · 无变量不调 API · "
-    f"工作区: workspaces/{workspace_name}/ · "
-    f"{st.session_state.get('llm_provider', 'DeepSeek')}: {'已配置' if st.session_state['api_key_configured'] else '模拟模式'} · "
-    f"openai:{'✅' if OPENAI_AVAILABLE else '⚠️'} docx:{'✅' if DOCX_AVAILABLE else '⚠️'} pdf:{'✅' if PDF_AVAILABLE else '⚠️'}"
-)
