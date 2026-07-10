@@ -1393,45 +1393,12 @@ with st.sidebar:
 
     st.caption(f"📂 `workspaces/{workspace_name}/`")
     st.markdown("---")
-    st.markdown("### 🔑 AI 引擎与 API 配置")
-    selected_llm = st.selectbox(
-        "🤖 选择默认大模型",
-        list(LLM_CONFIGS.keys()),
-        key="llm_provider",
-        help="DeepSeek: 高性价比推理 | Kimi: 超长无损上下文 (128k)",
-    )
-
-    state_key = f"api_key_{selected_llm}"
-
-    # 强制清理缓存机制：如果是 DeepSeek，并且当前缓存为空或者是旧的无效占位符，强行覆盖为真实的 API Key
-    cached_key = st.session_state.get(state_key, "")
-    if selected_llm == "DeepSeek" and (not cached_key or "sk-xxxx" in cached_key):
-        st.session_state[state_key] = DEFAULT_DEEPSEEK_API_KEY
-    elif state_key not in st.session_state:
-        st.session_state[state_key] = ""
-
-    api_key_input = st.text_input(
-        f"{selected_llm} API Key",
-        value=st.session_state[state_key],
-        type="password",
-        placeholder="sk-xxxxxxxxxxxxxxxx",
-    )
-
-    if api_key_input != st.session_state[state_key]:
-        st.session_state[state_key] = api_key_input
-
-    st.session_state["api_key"] = st.session_state[state_key]
-    st.session_state["api_key_configured"] = bool(st.session_state["api_key"].strip())
-
-    current_llm_cfg = LLM_CONFIGS[selected_llm]
-
-    if st.session_state["api_key_configured"]:
-        st.success("✅ API Key 已配置")
-        st.caption(f"引擎: `{selected_llm}` | 模型: `{current_llm_cfg['model']}`")
-        use_simulate = st.checkbox("🔧 调试：使用模拟模式", value=False, key="simulate_check")
-    else:
-        st.warning(f"⚠️ 未配置 {selected_llm} API Key · 模拟模式")
-        use_simulate = True
+    # --- 后台静默配置 API Key 与引擎（隐藏 UI，强制真实生成）---
+    selected_llm = "DeepSeek"
+    st.session_state["llm_provider"] = selected_llm
+    st.session_state["api_key"] = DEFAULT_DEEPSEEK_API_KEY
+    st.session_state["api_key_configured"] = True
+    use_simulate = False  # 永远关闭模拟模式，强制真实调用
 
     st.markdown("---")
     st.markdown("### 📋 功能导航")
