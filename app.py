@@ -1037,7 +1037,8 @@ def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_
                 continue
 
             # 强制每一篇寻找不同视角的防重复指令
-            angle_instruction = f"\n\n【多维视角与防原样照抄指令】这是本层级的第 {j}/5 篇文章。为了避免内容同质化，请你务必从下方的《基石素材》中挖掘【全新】的细节、案例或侧重点作为切入点！你必须对基石素材进行深度的重新组织和语言洗稿，使用全新的排版结构、标题和词汇。绝对不允许大面积原样复制粘贴基石中的整段文字！"
+            # 柔性切片指令：大主题一致，但强制模型自主寻找不同的细分切入点
+            angle_instruction = f"\n\n【柔性切片与防同质化指令】这是本层级的第 {j}/5 篇文章。请注意：文章的大主题依然是基于提供的事实为我们公司/品牌做宣传和专业解答。但为了避免这 5 篇文章内容重复，请你每次从《基石素材》中【自主挑选一个截然不同的细分切入点】（例如：可以专门侧重某个具体的痛点场景、某一项核心的产品优势、某个具体的操作细节，或针对某类特定特征的用户）。请顺着你选定的这个细分切入点把文章写透，切忌每次都写成面面俱到的通用概述大纲！"
 
             # 拼接最终 prompt，加入打乱器和强曝光规则
             current_prompt = final_prompt + f"\n\n请直接输出第 {j} 篇 {funnel} 层级切片内容。" + title_rule + brand_exposure_rule + angle_instruction + build_variance_instruction()
