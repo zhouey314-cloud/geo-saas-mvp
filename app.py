@@ -1495,21 +1495,27 @@ if st.session_state["page"].startswith("📊"):
             if not DOCX_AVAILABLE:
                 st.warning("💡 提示：检测到系统未安装 `python-docx` 引擎，已自动锁定 Word 批量导出功能。请在终端运行 `pip install python-docx` 并重启系统以解锁。")
             with col_dl:
+                # 强力判定，杜绝字符串匹配错误或状态错乱
+                is_word = "Word" in export_format
                 zip_buffer = io.BytesIO()
                 with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
                     for cp in checked_paths:
                         try:
-                            content = open(cp, "r", encoding="utf-8").read()
-                            if export_format == "Word (.docx)":
-                                zf.writestr(Path(cp).name.replace(".md", ".docx"), convert_md_to_docx_bytes(content))
+                            content = Path(cp).read_text(encoding="utf-8")
+                            if is_word:
+                                docx_name = Path(cp).name.replace(".md", ".docx")
+                                zf.writestr(docx_name, convert_md_to_docx_bytes(content))
                             else:
                                 zf.writestr(Path(cp).name, content.encode("utf-8"))
-                        except Exception:
+                        except Exception as e:
+                            print(f"打包文件失败已跳过: {e}")
                             pass
                 zip_buffer.seek(0)
-                zip_name = f"GEO_交付资产打包_{'docx' if 'Word' in export_format else 'md'}.zip"
+                zip_name = f"GEO_交付资产打包_{'docx' if is_word else 'md'}.zip"
+
+                # 按钮文案动态绑定格式，给用户视觉强制确认
                 st.download_button(
-                    f"📥 批量下载 ({len(checked_paths)} 篇)",
+                    label=f"📥 批量下载 ({len(checked_paths)}篇 {'Word' if is_word else 'MD'})",
                     data=zip_buffer,
                     file_name=zip_name,
                     mime="application/zip",
