@@ -1956,6 +1956,35 @@ elif st.session_state["page"].startswith("⚙️"):
     st.markdown('</div>', unsafe_allow_html=True)
 
     # ================================================================
+    # 步骤 4.5: 蓝V口播稿专栏
+    # ================================================================
+    s45c = "step-box done" if st.session_state.get("bluev_generated") else ("step-box active" if st.session_state.get("slices_generated") else "step-box blocked")
+    st.markdown(f'<div class="{s45c}">', unsafe_allow_html=True)
+    st.markdown("### 🎥 步骤 4.5：一键生成【蓝V短视频口播脚本】")
+    if not st.session_state.get("slices_generated", False):
+        st.warning("⛔ 请先完成步骤 4：裂变 30 篇企业视角切片。")
+    elif st.session_state.get("is_generating_bluev"):
+        st.info("🚀 正在后台全速生成蓝V口播稿，您可以切换页面实时查看产出！")
+        with st.spinner("后台生成中…"): time.sleep(0.5)
+    elif st.button("🎥 一键生成 30 篇短视频口播稿", type="primary", use_container_width=True, key="btn_bluev"):
+        BLUEV_DIR_UI = WSP["bluev"]; BLUEV_DIR_UI.mkdir(parents=True, exist_ok=True)
+        st.session_state["is_generating_bluev"] = True
+        t = threading.Thread(target=background_generate_bluev, args=(SLICES_DIR, BLUEV_DIR_UI, use_simulate, st.session_state["api_key"], st.session_state.get("llm_provider", "DeepSeek")))
+        t.start()
+        add_log("🚀 后台蓝V口播线程已启动")
+        st.rerun()
+    BV = WSP["bluev"]
+    if BV.exists():
+        bf_list = sorted(BV.glob("*.md"))
+        if bf_list:
+            with st.expander(f"📂 进度：{len(bf_list)}/30 篇", expanded=False):
+                if st.button("🔄 刷新", key="rf_bv"): st.rerun()
+                for bf in bf_list: st.caption(f"📄 {bf.name}")
+    if st.session_state.get("bluev_generated"):
+        st.success(f"✅ 30 篇蓝V口播稿已生成 → `{PROD_DIR}/BlueV_Scripts_30/`")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # ================================================================
     # 步骤 4: 重构 160 篇四级 UGC
     # ================================================================
     s4c = "step-box done" if st.session_state["ugc_generated"] else ("step-box active" if st.session_state["slices_generated"] else "step-box blocked")
