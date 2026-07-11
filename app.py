@@ -223,6 +223,7 @@ def get_workspace_paths(client_name: str) -> dict:
         "slices": ws / "Production_Output" / "Slices_30",
         "general": ws / "Production_Output" / "UGC_160" / "General_96",
         "specific": ws / "Production_Output" / "UGC_160" / "Specific_64",
+        "bluev": ws / "Production_Output" / "BlueV_Scripts_30",
     }
     for d in dirs.values():
         d.mkdir(parents=True, exist_ok=True)
@@ -791,6 +792,8 @@ DEFAULTS = {
     "verified_loaded": False, "verified_count": 0,
     "is_generating_slices": False,
     "is_generating_ugc": False,
+    "is_generating_bluev": False,
+    "bluev_generated": False,
     "slices_generated": False, "slices_outputs": {},
     "ugc_generated": False, "ugc_count": 0,
     "production_log": [],
@@ -1067,6 +1070,52 @@ def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_
             time.sleep(0.3)
         print(f"[后台切片] ✅ {funnel}: 5篇完成")
     print(f"[后台切片] 完成，共 {total}/30 篇")
+
+def background_generate_bluev(slices_dir, bluev_out, use_simulate, api_key, llm_provider="DeepSeek"):
+    """后台线程：基于 30 篇企业切片 1:1 生成蓝V口播稿"""
+    bluev_out.mkdir(parents=True, exist_ok=True)
+    slice_files = sorted(slices_dir.glob("*.md"))
+    total = 0
+
+    script_system_prompt = "你是一个顶级的短视频爆款编导。必须严格遵守输出要求，不输出任何废话。"
+
+    for sf in slice_files:
+        new_name_stem = sf.stem.replace("Slice_", "BlueV_口播_")
+        fname = f"{new_name_stem}.md"
+
+        if (bluev_out / fname).exists():
+            print(f"[蓝V口播] ⏩ {fname} 已存在，跳过...")
+            total += 1
+            continue
+
+        article_content = sf.read_text(encoding="utf-8")
+        prompt = f"""请基于以下我们企业官方发布的文章，为其提炼并改写成一篇适合抖音/视频号发布的【蓝V官方口播稿】（时长约1分钟左右，字数200-300字即可）。
+
+【内容与格式红线要求】
+1. 黄金三秒：开头第一句话必须极具吸引力，直击痛点。
+2. 镜头语言：必须是口语化的短句，适合真人口播，绝对不要出现晦涩的书面语和复杂的排版！
+3. 【强制收口红线】：口播的最后一段/最后一句，必须强制包含引导转化的动作！请使用"有需要的家长/朋友，私信联系我"、"点击我的主页头像了解更多详情"、"发私信免费获取"等极其口语化的话术作为结尾！绝对不要加任何网页链接！
+
+【源文章内容】：
+{article_content}
+
+请直接输出口播稿的正文。"""
+
+        success, content = call_llm(
+            prompt=prompt,
+            system_prompt=script_system_prompt,
+            api_key=api_key,
+            temperature=0.5,
+            max_tokens=1500,
+            simulate=use_simulate,
+            llm_provider=llm_provider,
+        )
+        if success:
+            safe_write_file(bluev_out, fname, content)
+            total += 1
+        time.sleep(0.3)
+    print(f"[蓝V口播] 完成，共 {total} 篇")
+
 def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek"):
     """后台线程：重构 160 篇四级 UGC（不依赖 st.session_state）"""
     word_ranges = {"L1": "300-500", "L2": "800-1500", "L3": "1500-2500", "L4": "2000-3500", "L5": "1000-2000", "L6": "500-1000"}
@@ -1269,6 +1318,8 @@ def _classify_source(file_path: str) -> tuple:
         return "二级 — EEAT 权威基石", "二级", "EEAT_Base"
     if "slices_30" in path_lower:
         return "三级 — 企业切片内容", "三级", "Slices_30"
+    if "bluev_scripts_30" in path_lower:
+        return "三级附加 — 蓝V口播稿", "口播稿", "BlueV_Scripts_30"
     if "specific_64" in path_lower:
         return "四级 — UGC 引擎专属", "四级专属", "Specific_64"
     if "general_96" in path_lower:
@@ -1393,12 +1444,20 @@ with st.sidebar:
             st.session_state["is_generating_slices"] = False
             st.session_state["slices_generated"] = True
 
+    BLUEV_DIR = WSP["bluev"]
+
     # 3. 恢复 160 篇 UGC 状态
     if GENERAL_DIR.exists() and SPECIFIC_DIR.exists():
         ugc_count = len(list(PROD_DIR.rglob("*.md"))) - slices_count
         if ugc_count >= 120:
             st.session_state["is_generating_ugc"] = False
             st.session_state["ugc_generated"] = True
+
+    # 4. 恢复蓝V口播稿状态
+    st.session_state["bluev_generated"] = False
+    if BLUEV_DIR.exists() and len(list(BLUEV_DIR.glob("*.md"))) >= 25:
+        st.session_state["is_generating_bluev"] = False
+        st.session_state["bluev_generated"] = True
 
     st.caption(f"📂 `workspaces/{workspace_name}/`")
     st.markdown("---")
@@ -1509,11 +1568,24 @@ if st.session_state["page"].startswith("📊"):
                     for cp in checked_paths:
                         try:
                             content = Path(cp).read_text(encoding="utf-8")
+
+                            # 1. 动态提取文章第一行作为标题并清洗非法字符
+                            lines = content.strip().split("\n")
+                            raw_title = lines[0].lstrip("# ").strip() if lines else "未命名文章"
+                            safe_title = sanitize_filename(raw_title) or "未命名文章"
+
+                            # 2. 提取文件名原有的前缀标识 (保留如 Slice_L1_01 的部分)
+                            orig_stem = Path(cp).stem
+                            match = re.match(r"^([a-zA-Z]*_?L[1-6]_\d{2})", orig_stem)
+                            new_stem = f"{match.group(1)}_{safe_title}" if match else f"{orig_stem}_{safe_title}"
+
+                            # 3. 写入重命名后的文件
                             if is_word:
-                                docx_name = Path(cp).name.replace(".md", ".docx")
+                                docx_name = f"{new_stem}.docx"
                                 zf.writestr(docx_name, convert_md_to_docx_bytes(content))
                             else:
-                                zf.writestr(Path(cp).name, content.encode("utf-8"))
+                                md_name = f"{new_stem}.md"
+                                zf.writestr(md_name, content.encode("utf-8"))
                         except Exception as e:
                             print(f"打包文件失败已跳过: {e}")
                             pass
@@ -1545,14 +1617,31 @@ if st.session_state["page"].startswith("📊"):
         if st.session_state["selected_content"]:
             st.markdown(f"**{st.session_state['selected_title']}**")
             st.caption(f"`{st.session_state['selected_filename']}`")
+            # 动态生成单篇下载的新文件名
+            orig_stem = Path(st.session_state['selected_filename']).stem
+            safe_title_single = sanitize_filename(st.session_state['selected_title']) or "未命名文章"
+            match = re.match(r"^([a-zA-Z]*_?L[1-6]_\d{2})", orig_stem)
+            new_dl_stem = f"{match.group(1)}_{safe_title_single}" if match else f"{orig_stem}_{safe_title_single}"
+
             b1, b2 = st.columns(2)
             with b1:
-                st.download_button(label="📥 下载单篇 (Markdown)", data=st.session_state["selected_content"].encode("utf-8"), file_name=st.session_state["selected_filename"], mime="text/markdown", use_container_width=True)
+                st.download_button(
+                    label="📥 下载单篇 (Markdown)",
+                    data=st.session_state["selected_content"].encode("utf-8"),
+                    file_name=f"{new_dl_stem}.md",
+                    mime="text/markdown",
+                    use_container_width=True,
+                )
             with b2:
                 if DOCX_AVAILABLE:
                     docx_bytes = convert_md_to_docx_bytes(st.session_state["selected_content"])
-                    docx_name = st.session_state["selected_filename"].replace(".md", ".docx")
-                    st.download_button(label="📥 下载单篇 (Word)", data=docx_bytes, file_name=docx_name, mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True)
+                    st.download_button(
+                        label="📥 下载单篇 (Word)",
+                        data=docx_bytes,
+                        file_name=f"{new_dl_stem}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        use_container_width=True,
+                    )
             with st.expander("📝 原始 Markdown", expanded=False): st.text_area("全选复制", value=st.session_state["selected_content"], height=250, label_visibility="collapsed")
             st.divider(); st.markdown(st.session_state["selected_content"])
         else:
