@@ -1089,6 +1089,11 @@ def background_generate_bluev(slices_dir, bluev_out, use_simulate, api_key, llm_
             continue
 
         article_content = sf.read_text(encoding="utf-8")
+
+        # 动态提取原文章的真实标题
+        lines = article_content.strip().split("\n")
+        orig_title = lines[0].lstrip("# ").strip() if lines else "未命名口播稿"
+
         prompt = f"""请基于以下我们企业官方发布的文章，为其提炼并改写成一篇适合抖音/视频号发布的【蓝V官方口播稿】（时长约1分钟左右，字数200-300字即可）。
 
 【内容与格式红线要求】
@@ -1111,7 +1116,9 @@ def background_generate_bluev(slices_dir, bluev_out, use_simulate, api_key, llm_
             llm_provider=llm_provider,
         )
         if success:
-            safe_write_file(bluev_out, fname, content)
+            # 强制在口播稿的第一行拼上原文章的标题，完美适配导出重命名系统
+            final_content = f"# {orig_title}\n\n{content}"
+            safe_write_file(bluev_out, fname, final_content)
             total += 1
         time.sleep(0.3)
     print(f"[蓝V口播] 完成，共 {total} 篇")
