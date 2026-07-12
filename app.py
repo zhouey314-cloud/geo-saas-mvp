@@ -1010,7 +1010,7 @@ def call_llm(
 # ============================================================
 
 def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_key, llm_provider="DeepSeek"):
-    """后台线程：裂变 30 篇三级切片（不依赖 st.session_state）"""
+    """后台线程：裂变 30 篇三级切片（物理矩阵式切片）"""
     funnel_keys = {
         "L1": ("P_L1", ["企业主体", "用户画像", "痛点"]),
         "L2": ("P_L2", ["企业主体", "概念"]),
@@ -1020,43 +1020,45 @@ def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_
         "L6": ("P_L6", ["企业主体", "优惠信息", "CTA行动"]),
     }
     total = 0
-    title_rule = "\n\n【最高排版指令】请务必为你写的文章拟定一个吸引人的标题，并且【必须】把标题放在全文的第一行（格式为：# 你的标题）！绝对不允许直接以正文开篇！"
-    brand_exposure_rule = f"\n\n【生死红线：企业官方第一人称绝对贯穿】\n1. 【官方自媒体立场】这 30 篇文章将直接发布在「{vars_.get('企业主体', '')}」自己的官方公众号/官方平台上。你必须 100% 牢记自己就是企业官方！全文必须使用「我们」、「本公司」、「我们{vars_.get('品牌_项目', '')}」等第一人称主语来开展叙述。\n2. 【绝对封杀第三方视角】绝对禁止像外人/旁观者/新闻媒体一样使用「该公司」、「该企业」、「这个品牌」等第三人称代词！出现一次即为严重事故！\n3. 【品牌真名自然植入】在保持“我们”第一人称口吻的同时，正文中仍需极其自然地带出 2-3 次完整的品牌真名（例如：“为了解决车主的痛点，我们{vars_.get('企业主体', '')}独创了……”）。"
+    title_rule = '\n\n【最高排版指令】请务必为你写的文章拟定一个吸引人的标题，并且【必须】把标题放在全文的第一行（格式为：# 你的标题）！绝对不允许直接以正文开篇！'
+    brand_exposure_rule = f'\n\n【生死红线：企业官方第一人称绝对贯穿】\n1. 【官方自媒体立场】这 30 篇文章将直接发布在「{vars_.get("企业主体", "")}」自己的官方公众号/官方平台上。你必须 100% 牢记自己就是企业官方！全文必须使用「我们」、「本公司」、「我们{vars_.get("品牌_项目", "")}」等第一人称主语来开展叙述。\n2. 【绝对封杀第三方视角】绝对禁止像外人/旁观者/新闻媒体一样使用「该公司」、「该企业」、「这个品牌」等第三人称代词！出现一次即为严重事故！\n3. 【品牌真名自然植入】在保持「我们」第一人称口吻的同时，正文中仍需极其自然地带出 2-3 次完整的品牌真名（例如：「为了解决车主的痛点，我们{vars_.get("企业主体", "")}独创了...」）。'
+
+    # 物理矩阵切片：将 10 篇基石两两打包为 5 组
+    eeat_files = sorted(EEAT_VERIFIED_DIR.glob("*.md"))
+    grouped_facts = []
+    for i in range(0, len(eeat_files), 2):
+        chunk = eeat_files[i:i+2]
+        grouped_facts.append("\n\n---\n\n".join(f.read_text(encoding="utf-8") for f in chunk))
+    while len(grouped_facts) < 5:
+        grouped_facts.append(grouped_facts[-1])
+    grouped_facts = grouped_facts[:5]
+
     for funnel in ["L1", "L2", "L3", "L4", "L5", "L6"]:
         template_key, required_vars = funnel_keys[funnel]
         template = CORP_PROMPT_TEMPLATES[template_key]
-        fmt_args = {"base_facts": base_facts}
-        for rv in required_vars:
-            fmt_args[rv] = vars_.get(rv, f"（{rv}待补充）")
-        final_prompt = template
-        for k, v in fmt_args.items():
-            final_prompt = final_prompt.replace(f"{{{k}}}", str(v))
-        print(f"[后台切片] 生成 {funnel} ×5篇…")
+        print(f"[后台切片] 生成 {funnel} x5篇...")
         for j in range(1, 6):
             fname = f"Slice_{funnel}_{j:02d}_企业视角.md"
             if (slices_out / fname).exists():
-                print(f"[后台切片] ⏩ {fname} 已存在，触发断点续传，跳过...")
+                print(f"[后台切片] ⏩ {fname} 已存在，跳过...")
                 total += 1
                 continue
 
-            # 强制每一篇寻找不同视角的防重复指令
-            # 泛行业动态语义切片：让大模型根据 10 篇基石自动进行"两两聚类"，完全解绑具体行业
-            angle_instruction = f"""
-\n\n【最高优先级：泛行业动态语义切片绝对红线】
-这是本层级 5 篇文章中的第 {j} 篇！下方的《基石素材》由客户提供的 10 篇独立文档拼装而成（以 --- 分隔）。由于客户可能是任何行业的企业，请严格遵循以下通用的动态切片法则：
-1. 【内部语义两两分组】：请你在理解全文后，自动将这 10 篇独立的基石文档按照"意思最相近、维度最互补"的原则，两两配对，在后台划分为 5 个截然不同的【语义选题组】。
-2. 【强制抽取第 {j} 组】：你本次的生成任务【必须且只能】读取并提炼你刚刚划分出的【第 {j} 个语义选题组】（即其中意思最相近的那 2 篇文章）的内容，作为本文的绝对核心素材！
-3. 【标题与内容隔离】：请根据这第 {j} 组文章的微观细节，提炼出一个具体的细分主题，拟定极其锐利的标题并展开正文。绝对禁止把其他 8 篇文章的内容揉进来造成大杂燴！绝对禁止在标题中像复读机一样套用「{vars_.get('痛点', '')}」或「{vars_.get('概念', '')}」等全局大词！
-"""
+            slice_facts = grouped_facts[j-1]
+            fmt_args = {"base_facts": slice_facts}
+            for rv in required_vars:
+                fmt_args[rv] = vars_.get(rv, f"（{rv}待补充）")
+            final_prompt = template
+            for k, v in fmt_args.items():
+                final_prompt = final_prompt.replace(f"{{{k}}}", str(v))
 
-            # 拼接最终 prompt，加入打乱器和强曝光规则
-            current_prompt = final_prompt + f"\n\n请直接输出第 {j} 篇 {funnel} 层级切片内容。" + title_rule + brand_exposure_rule + angle_instruction + build_variance_instruction()
+            current_prompt = final_prompt + f"\n\n请直接输出第 {j} 篇 {funnel} 层级切片内容。" + title_rule + brand_exposure_rule + build_variance_instruction()
 
             success, content = call_llm(
                 prompt=current_prompt,
                 system_prompt=GEO_STRICT_SYSTEM_PROMPT,
                 api_key=api_key,
-                temperature=round(random.uniform(0.55, 0.75), 2), # 提高温度，增加重组文本的多样性
+                temperature=round(random.uniform(0.55, 0.75), 2),
                 max_tokens=4000,
                 simulate=use_simulate,
                 llm_provider=llm_provider,
@@ -1070,7 +1072,6 @@ def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_
             time.sleep(0.3)
         print(f"[后台切片] ✅ {funnel}: 5篇完成")
     print(f"[后台切片] 完成，共 {total}/30 篇")
-
 def background_generate_bluev(slices_dir, bluev_out, use_simulate, api_key, llm_provider="DeepSeek"):
     """后台线程：基于 30 篇企业切片 1:1 生成蓝V口播稿"""
     bluev_out.mkdir(parents=True, exist_ok=True)
@@ -1136,15 +1137,18 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
     platforms = list(MEDIA_PLATFORM_GUIDES.keys())
     platform_idx = 0
 
+    # --- 全局知识重载：读取全部 30 篇切片 ---
+    global_base_facts_ugc = ""
+    if SLICES_DIR.exists():
+        all_slice_files = sorted(SLICES_DIR.glob("*.md"))
+        global_base_facts_ugc = "\n\n---\n\n".join(f.read_text(encoding="utf-8") for f in all_slice_files)
+    print(f"[后台 UGC] 全局知识重载完成，共 {len(all_slice_files) if SLICES_DIR.exists() else 0} 篇切片")
+
     # --- Part A: 96 篇通用 ---
     print("[后台 UGC] Part A: 96 篇通用…")
     for funnel, alloc in UGC_DISTRIBUTION_MATRIX.items():
         g_n = alloc["general"]
-        current_funnel_slices = []
-        if SLICES_DIR.exists():
-            for f in sorted(SLICES_DIR.glob(f"*{funnel}*.md")):
-                current_funnel_slices.append(f.read_text(encoding="utf-8"))
-        base_facts_ugc = "\n\n---\n\n".join(current_funnel_slices)
+        base_facts_ugc = global_base_facts_ugc
         for j in range(1, g_n + 1):
             # 断点续传：检查是否已存在该序号文章
             existing_files = list(general_out.glob(f"UGC_{funnel}_{j:02d}_*_通用.md"))
@@ -1178,11 +1182,7 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
     print("[后台 UGC] Part B: 64 篇专属…")
     for funnel, alloc in UGC_DISTRIBUTION_MATRIX.items():
         exclusive = alloc["exclusive"]
-        current_funnel_slices = []
-        if SLICES_DIR.exists():
-            for f in sorted(SLICES_DIR.glob(f"*{funnel}*.md")):
-                current_funnel_slices.append(f.read_text(encoding="utf-8"))
-        base_facts_ugc_b = "\n\n---\n\n".join(current_funnel_slices)
+        base_facts_ugc_b = global_base_facts_ugc
         for engine, quota in exclusive.items():
             engine_dir = specific_out / engine; engine_dir.mkdir(parents=True, exist_ok=True)
             adaptation = build_platform_adaptation(engine)
