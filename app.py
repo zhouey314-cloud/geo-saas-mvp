@@ -1528,6 +1528,20 @@ if st.session_state["page"].startswith("📊"):
         st.markdown("### 📋 文章列表")
         fa = [a for a in articles if (sel_src=="全部" or a["source_short"]==sel_src) and (sel_fun=="全部" or a["funnel"]==sel_fun) and (sel_eng=="全部" or a.get("engine","")==sel_eng)]
 
+        # --- 全选/取消全选 ---
+        if fa:
+            col_sel1, col_sel2 = st.columns(2)
+            with col_sel1:
+                if st.button("✅ 全选当前列表", use_container_width=True, key="btn_select_all"):
+                    for i, a in enumerate(fa):
+                        st.session_state[f"chk_{i}_{a['filename'][:15]}"] = True
+                    st.rerun()
+            with col_sel2:
+                if st.button("🔲 取消全选", use_container_width=True, key="btn_deselect_all"):
+                    for i, a in enumerate(fa):
+                        st.session_state[f"chk_{i}_{a['filename'][:15]}"] = False
+                    st.rerun()
+
         # --- 批量下载 ZIP ---
         if fa:
             checked_paths = []
