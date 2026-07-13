@@ -903,6 +903,43 @@ def convert_md_to_docx_bytes(md_content: str) -> bytes:
     return bio.getvalue()
 
 
+def build_export_filename(content: str, orig_stem: str, suffix: str) -> str:
+    """构建直观的导出文件名：【层级-平台】真实标题.suffix"""
+    funnel = extract_funnel_from_filename(orig_stem) or ""
+
+    # 尝试提取平台：从文件名中匹配已知平台
+    platform = ""
+    for p in list(MEDIA_PLATFORM_GUIDES.keys()):
+        if p in orig_stem:
+            platform = p
+            break
+    if not platform:
+        engine_match = re.match(r"^(豆包|元宝|千问|文心一言|Kimi|DeepSeek)", orig_stem)
+        if engine_match:
+            platform = engine_match.group(1)
+
+    # 提取文章真实标题（第一行 # 开头的内容）
+    lines = content.strip().split("\n")
+    raw_title = ""
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("# "):
+            raw_title = stripped.lstrip("# ").strip()
+            break
+    if not raw_title:
+        raw_title = lines[0].lstrip("# ").strip() if lines else "未命名文章"
+
+    # 清洗标题中的非法字符
+    safe_title = sanitize_filename(raw_title) or "未命名文章"
+
+    # 组装前缀
+    prefix_parts = [p for p in [funnel, platform] if p]
+    prefix = "-".join(prefix_parts)
+    if prefix:
+        return f"【{prefix}】{safe_title}.{suffix}"
+    return f"{safe_title}.{suffix}"
+
+
 def sanitize_filename(name: str) -> str:
     """清洗文件名中的非法字符, 将 / \\ : * ? \" < > | 替换为 _"""
     illegal_chars = r'[\/\\:*?"<>|]'
@@ -1590,24 +1627,14 @@ if st.session_state["page"].startswith("📊"):
                     for cp in checked_paths:
                         try:
                             content = Path(cp).read_text(encoding="utf-8")
-
-                            # 1. 动态提取文章第一行作为标题并清洗非法字符
-                            lines = content.strip().split("\n")
-                            raw_title = lines[0].lstrip("# ").strip() if lines else "未命名文章"
-                            safe_title = sanitize_filename(raw_title) or "未命名文章"
-
-                            # 2. 提取文件名原有的前缀标识 (保留如 Slice_L1_01 的部分)
                             orig_stem = Path(cp).stem
-                            match = re.match(r"^([a-zA-Z]*_?L[1-6]_\d{2})", orig_stem)
-                            new_stem = f"{match.group(1)}_{safe_title}" if match else f"{orig_stem}_{safe_title}"
 
-                            # 3. 写入重命名后的文件
                             if is_word:
-                                docx_name = f"{new_stem}.docx"
-                                zf.writestr(docx_name, convert_md_to_docx_bytes(content))
+                                zip_name_inner = build_export_filename(content, orig_stem, "docx")
+                                zf.writestr(zip_name_inner, convert_md_to_docx_bytes(content))
                             else:
-                                md_name = f"{new_stem}.md"
-                                zf.writestr(md_name, content.encode("utf-8"))
+                                zip_name_inner = build_export_filename(content, orig_stem, "md")
+                                zf.writestr(zip_name_inner, content.encode("utf-8"))
                         except Exception as e:
                             print(f"打包文件失败已跳过: {e}")
                             pass
@@ -1640,27 +1667,27 @@ if st.session_state["page"].startswith("📊"):
             st.markdown(f"**{st.session_state['selected_title']}**")
             st.caption(f"`{st.session_state['selected_filename']}`")
             # 动态生成单篇下载的新文件名
+            content = st.session_state["selected_content"]
             orig_stem = Path(st.session_state['selected_filename']).stem
-            safe_title_single = sanitize_filename(st.session_state['selected_title']) or "未命名文章"
-            match = re.match(r"^([a-zA-Z]*_?L[1-6]_\d{2})", orig_stem)
-            new_dl_stem = f"{match.group(1)}_{safe_title_single}" if match else f"{orig_stem}_{safe_title_single}"
+            md_name = build_export_filename(content, orig_stem, "md")
+            docx_name = build_export_filename(content, orig_stem, "docx")
 
             b1, b2 = st.columns(2)
             with b1:
                 st.download_button(
                     label="📥 下载单篇 (Markdown)",
-                    data=st.session_state["selected_content"].encode("utf-8"),
-                    file_name=f"{new_dl_stem}.md",
+                    data=content.encode("utf-8"),
+                    file_name=md_name,
                     mime="text/markdown",
                     use_container_width=True,
                 )
             with b2:
                 if DOCX_AVAILABLE:
-                    docx_bytes = convert_md_to_docx_bytes(st.session_state["selected_content"])
+                    docx_bytes = convert_md_to_docx_bytes(content)
                     st.download_button(
                         label="📥 下载单篇 (Word)",
                         data=docx_bytes,
-                        file_name=f"{new_dl_stem}.docx",
+                        file_name=docx_name,
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                         use_container_width=True,
                     )
