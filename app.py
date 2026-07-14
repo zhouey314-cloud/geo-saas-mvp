@@ -2342,7 +2342,7 @@ elif st.session_state["page"].startswith("⚙️"):
                         status.update(label="⚠️ 提取失败或资料中确实无案例", state="error")
 
     with col_upload:
-        uploaded_cases = st.file_uploader("或手动上传独立案例库 (.txt / .md)", type=["txt", "md"], accept_multiple_files=True, key="fu_cases", label_visibility="collapsed")
+        uploaded_cases = st.file_uploader("或手动上传独立案例库 (.txt, .md, .docx, .pdf)", type=["txt", "md", "docx", "pdf"], accept_multiple_files=True, key="fu_cases", label_visibility="collapsed")
         if st.button("📥 保存手动上传的案例", use_container_width=True, key="btn_save_cases"):
             if uploaded_cases:
                 cases_dir = WSP["cases"]
@@ -2416,11 +2416,11 @@ elif st.session_state["page"].startswith("⚙️"):
     st.caption("上传你生成的文章，智能体将基于步骤 1 中读取的所有企业原始资料（全量字符），对其进行逐句事实核查。")
 
     fc_files = st.file_uploader(
-        "上传待检文章 (.md)",
-        type=["md"],
+        "上传待检文章 (.txt, .md, .docx, .pdf)",
+        type=["txt", "md", "docx", "pdf"],
         accept_multiple_files=True,
         key="fu_fact_check",
-        help="上传步骤 3/4 生成的切片或 UGC 文章，支持多选。",
+        help="上传生成的切片或 UGC 文章，支持多选。",
     )
 
     if st.button("🔬 开始深度事实核查", type="primary", use_container_width=True, key="btn_fact_check"):
@@ -2435,7 +2435,7 @@ elif st.session_state["page"].startswith("⚙️"):
                 progress_bar = st.progress(0, text="正在逐篇核查…")
                 for idx, uf in enumerate(fc_files):
                     try:
-                        article_text = uf.read().decode("utf-8")
+                        fname, article_text = extract_text_from_upload(uf)
                     except Exception:
                         continue
 
@@ -2502,8 +2502,8 @@ elif st.session_state["page"].startswith("⚙️"):
     )
 
     fw_files = st.file_uploader(
-        "上传待检文章 (.md)",
-        type=["md"],
+        "上传待检文章 (.txt, .md, .docx, .pdf)",
+        type=["txt", "md", "docx", "pdf"],
         accept_multiple_files=True,
         key="fu_forbidden",
         help="上传最终待发布的文章，逐篇扫描违禁词。",
@@ -2516,7 +2516,7 @@ elif st.session_state["page"].startswith("⚙️"):
         else:
             for uf in fw_files:
                 try:
-                    text = uf.read().decode("utf-8")
+                    fname, text = extract_text_from_upload(uf)
                 except Exception:
                     st.warning(f"⚠️ 无法读取 {uf.name}")
                     continue
