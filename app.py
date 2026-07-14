@@ -170,6 +170,18 @@ FACT_CHECK_PROMPT = """你是一个极其严苛但【极度聪明、懂人类语
 【待检文章】：
 {article_text}"""
 
+CASE_DISTILLATION_PROMPT = """你是一个顶级的数据挖掘与信息提纯专家。请仔细阅读以下企业全量原始资料，从中提取出【所有】的真实客户案例、服务故事、客户痛点解决记录。
+
+要求：
+1. 提纯：将每个提取出的案例润色为 150-300 字的精简故事，保留客户背景、核心痛点、解决方案和具体数据/结果。扔掉所有营销废话。
+2. 格式：每个案例之间【必须】用且仅用 `\\n\\n---\\n\\n` 分隔。
+3. 事实红线：绝对禁止编造！如果你在全文中只找到 5 个案例，就只输出 5 个。如果没有找到任何具体案例，请直接回复"未找到具体案例"。
+4. 纯净输出：只输出案例内容，不要输出任何诸如"好的，为您提取"等对话前缀或结尾。
+
+【企业全量原始资料】：
+{raw_text}
+"""
+
 LONG_TEXT_GROUNDING_PROMPT = """【最高事实红线与长文本检索指令】你现在接收到了多达数十万字的原始企业文档拼图。在撰写本文时，你必须像雷达一样精准检索与本文主题相关的段落，并严格遵守以下纪律：
 1. 【绝对禁止捏造】所有数据、价格、服务细节、品牌历程必须 100% 来源于下文的原始资料。
 2. 【案例留白机制】如果提示词要求你写一个『真实客户案例』，你必须去原文中寻找。如果在海量文本中找不到具体的人物救援、消费故事，【绝对禁止】脑补编造张三、李四等虚构人物！找不到具体案例时，直接在正文中输出：『[此处需品牌方补充真实客户案例]』。
@@ -2318,19 +2330,46 @@ elif st.session_state["page"].startswith("⚙️"):
         </div>
         """, unsafe_allow_html=True)
 
-            # --- 案例库上传入口 ---
-            st.markdown("#### 📖 [可选] 外挂独立案例知识库")
-            st.caption("上传包含大量真实客户案例的文档。建议不同案例之间用 `---` 分隔。系统将在生成 160 篇 UGC 时动态随机抽取，避免案例重复。")
-            uploaded_cases = st.file_uploader("上传独立案例库 (.txt / .md)", type=["txt", "md"], accept_multiple_files=True, key="fu_cases")
-            if st.button("📥 保存案例库", key="btn_save_cases"):
-                if uploaded_cases:
-                    cases_dir = WSP["cases"]
-                    cases_dir.mkdir(parents=True, exist_ok=True)
-                    for uc in uploaded_cases:
-                        fname, content = extract_text_from_upload(uc)
-                        safe_write_file(cases_dir, f"{Path(fname).stem}.md", content)
-                    st.toast(f"✅ 成功保存 {len(uploaded_cases)} 个案例文件！", icon="📦")
-                    st.rerun()
+            # --- 两段式案例知识库管理（AI蒸馏 + 手动上传）---
+            st.markdown("#### 💎 核心引擎：独立案例库管理 (防同质化)")
+            st.caption("160 篇 UGC 将从此库中随机抽取背景故事。你可以选择让 AI 自动从原资料中蒸馏，也可以手动上传补充。")
+
+            col_distill, col_upload = st.columns([1, 1])
+            with col_distill:
+                if st.button("🤖 一键从原始资料蒸馏真实案例", type="primary", use_container_width=True, key="btn_distill_cases"):
+                    raw_text = st.session_state.get("raw_text_combined", "")
+                    if not raw_text:
+                        st.error("🚨 请先在步骤 1 读取企业原始资料！")
+                    else:
+                        with st.status("🔍 正在开启全局雷达，深度挖掘并蒸馏真实案例...", expanded=True) as status:
+                            prompt = CASE_DISTILLATION_PROMPT.format(raw_text=raw_text[:45000])
+                            success, content = call_llm(prompt, system_prompt="你是无情的数据挖掘机，严格按要求输出格式。", api_key=st.session_state["api_key"], temperature=0.3, simulate=use_simulate)
+                            if success and "未找到具体案例" not in content:
+                                cases_dir = WSP["cases"]
+                                cases_dir.mkdir(parents=True, exist_ok=True)
+                                safe_write_file(cases_dir, "Auto_Distilled_Cases.md", content)
+                                case_count = len(content.split("---"))
+                                status.update(label=f"✅ 蒸馏完成！成功提取约 {case_count} 个独立案例入库。", state="complete")
+                            else:
+                                status.update(label="⚠️ 提取失败或资料中确实无案例", state="error")
+
+            with col_upload:
+                uploaded_cases = st.file_uploader("或手动上传独立案例库 (.txt / .md)", type=["txt", "md"], accept_multiple_files=True, key="fu_cases", label_visibility="collapsed")
+                if st.button("📥 保存手动上传的案例", use_container_width=True, key="btn_save_cases"):
+                    if uploaded_cases:
+                        cases_dir = WSP["cases"]
+                        cases_dir.mkdir(parents=True, exist_ok=True)
+                        for uc in uploaded_cases:
+                            fname, content = extract_text_from_upload(uc)
+                            safe_write_file(cases_dir, f"{Path(fname).stem}.md", content)
+                        st.toast(f"✅ 成功保存 {len(uploaded_cases)} 个手动案例文件！", icon="📦")
+
+            # 展示当前案例库状态
+            cases_dir = WSP["cases"]
+            if cases_dir.exists():
+                case_files = list(cases_dir.glob("*.md"))
+                if case_files:
+                    st.success(f"📦 当前案例库已准备就绪：包含 {len(case_files)} 个案例集合文件。")
 
             if st.session_state.get("is_generating_ugc"):
                 st.info("🚀 正在后台全速生成 UGC 中，您可以切换到【交付资产大盘】实时查看产出！")
