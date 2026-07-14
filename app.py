@@ -2312,6 +2312,54 @@ elif st.session_state["page"].startswith("⚙️"):
     # ================================================================
     s4c = "step-box done" if st.session_state["ugc_generated"] else ("step-box active" if st.session_state["slices_generated"] else "step-box blocked")
     st.markdown(f'<div class="{s4c}">', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # ================================================================
+    # 步骤 4.8: 独立案例库提纯
+    # ================================================================
+    st.markdown('<div class="step-box active">', unsafe_allow_html=True)
+    st.markdown("### 📚 步骤 4.8：独立案例库提纯 (UGC 防同质化核心)")
+    st.markdown("#### 💎 核心引擎：独立案例库管理 (防同质化)")
+    st.caption("160 篇 UGC 将从此库中随机抽取背景故事。你可以选择让 AI 自动从原资料中蒸馏，也可以手动上传补充。")
+
+    col_distill, col_upload = st.columns([1, 1])
+    with col_distill:
+        if st.button("🤖 一键从原始资料蒸馏真实案例", type="primary", use_container_width=True, key="btn_distill_cases"):
+            raw_text = st.session_state.get("raw_text_combined", "")
+            if not raw_text:
+                st.error("🚨 请先在步骤 1 读取企业原始资料！")
+            else:
+                with st.status("🔍 正在开启全局雷达，深度挖掘并蒸馏真实案例...", expanded=True) as status:
+                    prompt = CASE_DISTILLATION_PROMPT.format(raw_text=raw_text[:45000])
+                    success, content = call_llm(prompt, system_prompt="你是无情的数据挖掘机，严格按要求输出格式。", api_key=st.session_state["api_key"], temperature=0.3, simulate=use_simulate)
+                    if success and "未找到具体案例" not in content:
+                        cases_dir = WSP["cases"]
+                        cases_dir.mkdir(parents=True, exist_ok=True)
+                        safe_write_file(cases_dir, "Auto_Distilled_Cases.md", content)
+                        case_count = len(content.split("---"))
+                        status.update(label=f"✅ 蒸馏完成！成功提取约 {case_count} 个独立案例入库。", state="complete")
+                    else:
+                        status.update(label="⚠️ 提取失败或资料中确实无案例", state="error")
+
+    with col_upload:
+        uploaded_cases = st.file_uploader("或手动上传独立案例库 (.txt / .md)", type=["txt", "md"], accept_multiple_files=True, key="fu_cases", label_visibility="collapsed")
+        if st.button("📥 保存手动上传的案例", use_container_width=True, key="btn_save_cases"):
+            if uploaded_cases:
+                cases_dir = WSP["cases"]
+                cases_dir.mkdir(parents=True, exist_ok=True)
+                for uc in uploaded_cases:
+                    fname, content = extract_text_from_upload(uc)
+                    safe_write_file(cases_dir, f"{Path(fname).stem}.md", content)
+                st.toast(f"✅ 成功保存 {len(uploaded_cases)} 个手动案例文件！", icon="📦")
+
+    # 展示当前案例库状态
+    cases_dir = WSP["cases"]
+    if cases_dir.exists():
+        case_files = list(cases_dir.glob("*.md"))
+        if case_files:
+            st.success(f"📦 当前案例库已准备就绪：包含 {len(case_files)} 个案例集合文件。")
+    st.markdown('</div>', unsafe_allow_html=True)
+
     st.markdown("### 👥 步骤 5：重构 160 篇【真实用户视角】UGC 内容")
 
     if not st.session_state.get("slices_generated", False):
@@ -2330,46 +2378,6 @@ elif st.session_state["page"].startswith("⚙️"):
         </div>
         """, unsafe_allow_html=True)
 
-            # --- 两段式案例知识库管理（AI蒸馏 + 手动上传）---
-            st.markdown("#### 💎 核心引擎：独立案例库管理 (防同质化)")
-            st.caption("160 篇 UGC 将从此库中随机抽取背景故事。你可以选择让 AI 自动从原资料中蒸馏，也可以手动上传补充。")
-
-            col_distill, col_upload = st.columns([1, 1])
-            with col_distill:
-                if st.button("🤖 一键从原始资料蒸馏真实案例", type="primary", use_container_width=True, key="btn_distill_cases"):
-                    raw_text = st.session_state.get("raw_text_combined", "")
-                    if not raw_text:
-                        st.error("🚨 请先在步骤 1 读取企业原始资料！")
-                    else:
-                        with st.status("🔍 正在开启全局雷达，深度挖掘并蒸馏真实案例...", expanded=True) as status:
-                            prompt = CASE_DISTILLATION_PROMPT.format(raw_text=raw_text[:45000])
-                            success, content = call_llm(prompt, system_prompt="你是无情的数据挖掘机，严格按要求输出格式。", api_key=st.session_state["api_key"], temperature=0.3, simulate=use_simulate)
-                            if success and "未找到具体案例" not in content:
-                                cases_dir = WSP["cases"]
-                                cases_dir.mkdir(parents=True, exist_ok=True)
-                                safe_write_file(cases_dir, "Auto_Distilled_Cases.md", content)
-                                case_count = len(content.split("---"))
-                                status.update(label=f"✅ 蒸馏完成！成功提取约 {case_count} 个独立案例入库。", state="complete")
-                            else:
-                                status.update(label="⚠️ 提取失败或资料中确实无案例", state="error")
-
-            with col_upload:
-                uploaded_cases = st.file_uploader("或手动上传独立案例库 (.txt / .md)", type=["txt", "md"], accept_multiple_files=True, key="fu_cases", label_visibility="collapsed")
-                if st.button("📥 保存手动上传的案例", use_container_width=True, key="btn_save_cases"):
-                    if uploaded_cases:
-                        cases_dir = WSP["cases"]
-                        cases_dir.mkdir(parents=True, exist_ok=True)
-                        for uc in uploaded_cases:
-                            fname, content = extract_text_from_upload(uc)
-                            safe_write_file(cases_dir, f"{Path(fname).stem}.md", content)
-                        st.toast(f"✅ 成功保存 {len(uploaded_cases)} 个手动案例文件！", icon="📦")
-
-            # 展示当前案例库状态
-            cases_dir = WSP["cases"]
-            if cases_dir.exists():
-                case_files = list(cases_dir.glob("*.md"))
-                if case_files:
-                    st.success(f"📦 当前案例库已准备就绪：包含 {len(case_files)} 个案例集合文件。")
 
             if st.session_state.get("is_generating_ugc"):
                 st.info("🚀 正在后台全速生成 UGC 中，您可以切换到【交付资产大盘】实时查看产出！")
