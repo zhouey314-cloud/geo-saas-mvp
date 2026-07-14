@@ -1937,22 +1937,55 @@ elif st.session_state["page"].startswith("⚙️"):
             </div>
             """, unsafe_allow_html=True)
 
-            if st.session_state.get("is_generating_slices"):
-                st.info("🚀 正在后台全速裂变切片中，您可以切换到【交付资产大盘】实时查看产出！")
-                with st.spinner("后台生成中…"):
-                    time.sleep(0.5)
-            elif st.button("✂️ 4. 裂变 30 篇企业视角切片", type="primary", use_container_width=True, key="btn_slices"):
-                vars_ = st.session_state.get("variables", {})
-                eeat_files = sorted(EEAT_VERIFIED_DIR.glob("*.md"))
-                base_facts = "\n\n---\n\n".join(f.read_text(encoding="utf-8") for f in eeat_files)
-                slices_out = SLICES_DIR
-                slices_out.mkdir(exist_ok=True)
+            # --- 双轨运行机制：AI 生成 + 手动导入 ---
+            col_gen, col_up = st.columns([1, 1])
 
-                st.session_state["is_generating_slices"] = True
-                t = threading.Thread(target=background_generate_slices, args=(vars_, base_facts, slices_out, use_simulate, st.session_state["api_key"], st.session_state.get("llm_provider", "DeepSeek")))
-                t.start()
-                add_log("🚀 后台切片线程已启动")
-                st.rerun()
+            with col_gen:
+                st.markdown("#### 方案 A：AI 全自动裂变")
+                if st.session_state.get("is_generating_slices"):
+                    st.info("🚀 正在后台全速裂变切片中，您可以切换到【交付资产大盘】实时查看产出！")
+                    with st.spinner("后台生成中…"):
+                        time.sleep(0.5)
+                elif st.button("✂️ 4. 裂变 30 篇企业视角切片", type="primary", use_container_width=True, key="btn_slices"):
+                    vars_ = st.session_state.get("variables", {})
+                    eeat_files = sorted(EEAT_VERIFIED_DIR.glob("*.md"))
+                    base_facts = "\n\n---\n\n".join(f.read_text(encoding="utf-8") for f in eeat_files)
+                    slices_out = SLICES_DIR
+                    slices_out.mkdir(exist_ok=True)
+
+                    st.session_state["is_generating_slices"] = True
+                    t = threading.Thread(target=background_generate_slices, args=(vars_, base_facts, slices_out, use_simulate, st.session_state["api_key"], st.session_state.get("llm_provider", "DeepSeek")))
+                    t.start()
+                    add_log("🚀 后台切片线程已启动")
+                    st.rerun()
+
+            with col_up:
+                st.markdown("#### 方案 B：直接导入已有切片")
+                uploaded_slices = st.file_uploader(
+                    "如果已有切片，请在此直接批量上传 (.md / .docx)",
+                    type=["md", "docx", "txt"],
+                    accept_multiple_files=True,
+                    key="fu_slices_skip",
+                    help="支持批量框选上传。上传后将自动跳过生成，直接解锁后续步骤。"
+                )
+                if st.button("📥 保存上传并解锁下一步", type="secondary", use_container_width=True, key="btn_upload_slices"):
+                    if not uploaded_slices:
+                        st.error("🚨 请先将文件拖拽到上方虚线框内！")
+                    else:
+                        SLICES_DIR.mkdir(parents=True, exist_ok=True)
+                        saved_count = 0
+                        for uf in uploaded_slices:
+                            try:
+                                fname, content = extract_text_from_upload(uf)
+                                safe_write_file(SLICES_DIR, f"{Path(fname).stem}.md", content)
+                                saved_count += 1
+                            except Exception as e:
+                                st.warning(f"⚠️ 无法保存 {uf.name}: {e}")
+
+                        st.session_state["slices_generated"] = True
+                        add_log(f"✅ 手动导入了 {saved_count} 篇切片 → Slices_30/")
+                        st.toast(f"✅ 成功导入 {saved_count} 篇切片！后续步骤已解锁", icon="🔓")
+                        st.rerun()
 
     # --- 实时进度可视化 (切片) ---
     if SLICES_DIR.exists():
