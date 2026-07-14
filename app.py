@@ -1110,7 +1110,7 @@ def build_export_filename(content: str, orig_stem: str, suffix: str) -> str:
             platform = p
             break
     if not platform:
-        engine_match = re.match(r"^(豆包|元宝|千问|文心一言|Kimi|DeepSeek)", orig_stem)
+        engine_match = re.search(r"(豆包|元宝|千问|文心一言|Kimi|DeepSeek)", orig_stem)
         if engine_match:
             platform = engine_match.group(1)
 
@@ -1560,7 +1560,7 @@ def extract_funnel_from_filename(name: str) -> str:
 
 def extract_engine_from_filename(name: str) -> str:
     for eng in ["豆包","元宝","千问","文心一言","Kimi","DeepSeek"]:
-        if name.startswith(eng): return eng
+        if eng in name: return eng
     return ""
 
 def _classify_source(file_path: str) -> tuple:
