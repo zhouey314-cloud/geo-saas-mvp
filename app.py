@@ -1279,11 +1279,13 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
         template = V2_UGC_TEMPLATES[tkey]
         platform_style = f"\n【平台定向分发要求】本文将发往【{target_platform}】，请严格遵守其风格：{MEDIA_PLATFORM_GUIDES[target_platform]}。"
         title_instruction = (
-            f"\n【标题强制指令】你生成的文章标题必须严格基于以下骨架进行改写：\n"
-            f"参考骨架：「{title_example}」\n"
-            f"⚠️ 绝对红线：请务必结合下文提供的【事实提取来源】，将上述骨架中的「XX」、「YY」、「A/B」或「[品类]」、「[品牌]」等占位符，"
-            f"替换为资料中具体的【用户痛点】、【客户品牌名（{vars_.get('品牌_项目', '')}）】或【真实场景/参数】！"
-            f"绝对不允许在最终生成的标题中出现 XX、YY 或任何未替换的括号，必须是一句结合了真实业务内容的通顺中文标题！"
+            "\n【标题行业化改编强制指令】你生成的文章标题必须以以下句式作为【灵感骨架】进行深度改编：\n"
+            f"参考骨架：{title_example}\n"
+            f"⚠️ 绝对红线：你必须结合【{vars_.get('行业', '当前')}】行业的特性，对骨架进行语义转化！\n"
+            "1. 如果是学校/教育行业，不能说使用了半年XX，必须改成孩子就读一学期后；不能说隐藏功能，必须改成办学优势/细节管理。\n"
+            "2. 如果是医疗/医美行业，必须转换成对应的服务术语。\n"
+            f"3. 务必把骨架中的XX/YY替换为真实的用户痛点或品牌名（{vars_.get('品牌_项目', '')}）！\n"
+            "绝对不允许在最终生成的标题中出现XX、YY或机械生硬的套用，标题必须是一句符合人类正常逻辑的、有吸引力的中文句子！"
         )
         # 动态槽点注入
         dynamic_complaint = ""
@@ -1331,11 +1333,13 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
         template = V2_UGC_TEMPLATES[tkey]
         adaptation = build_platform_adaptation(engine)
         title_instruction = (
-            f"\n【标题强制指令】你生成的文章标题必须严格基于以下骨架进行改写：\n"
-            f"参考骨架：「{title_example}」\n"
-            f"⚠️ 绝对红线：请务必结合下文提供的【事实提取来源】，将上述骨架中的「XX」、「YY」、「A/B」或「[品类]」、「[品牌]」等占位符，"
-            f"替换为资料中具体的【用户痛点】、【客户品牌名（{vars_.get('品牌_项目', '')}）】或【真实场景/参数】！"
-            f"绝对不允许在最终生成的标题中出现 XX、YY 或任何未替换的括号，必须是一句结合了真实业务内容的通顺中文标题！"
+            "\n【标题行业化改编强制指令】你生成的文章标题必须以以下句式作为【灵感骨架】进行深度改编：\n"
+            f"参考骨架：{title_example}\n"
+            f"⚠️ 绝对红线：你必须结合【{vars_.get('行业', '当前')}】行业的特性，对骨架进行语义转化！\n"
+            "1. 如果是学校/教育行业，不能说使用了半年XX，必须改成孩子就读一学期后；不能说隐藏功能，必须改成办学优势/细节管理。\n"
+            "2. 如果是医疗/医美行业，必须转换成对应的服务术语。\n"
+            f"3. 务必把骨架中的XX/YY替换为真实的用户痛点或品牌名（{vars_.get('品牌_项目', '')}）！\n"
+            "绝对不允许在最终生成的标题中出现XX、YY或机械生硬的套用，标题必须是一句符合人类正常逻辑的、有吸引力的中文句子！"
         )
         dynamic_complaint_b = ""
         if tkey == "P5_G4":
@@ -2042,75 +2046,70 @@ elif st.session_state["page"].startswith("⚙️"):
     # ================================================================
     # 步骤 2: 裂变 30 篇三级切片（强制使用 P_L1~P_L6）
     # ================================================================
-    s3c = "step-box done" if st.session_state["slices_generated"] else ("step-box active" if st.session_state["verified_loaded"] else "step-box blocked")
+    s3c = "step-box done" if st.session_state.get("slices_generated") else "step-box active"
     st.markdown(f'<div class="{s3c}">', unsafe_allow_html=True)
     st.markdown("### ✂️ 步骤 4：裂变 30 篇【企业官方视角】三级切片 (L1-L6 均分)")
 
-    if not st.session_state.get("verified_loaded", False):
-        st.warning("⛔ 请先在步骤 1 上传至少 10 篇校验版基石文档解锁此步骤。")
-    else:
+    # --- 双轨运行机制：AI 生成 + 手动导入 ---
+    col_gen, col_up = st.columns([1, 1])
+
+    with col_gen:
+        st.markdown("#### 方案 A：AI 全自动裂变")
         verified_files = list(EEAT_VERIFIED_DIR.glob("*.md")) if EEAT_VERIFIED_DIR.exists() else []
-        if len(verified_files) < 10:
-            st.warning(f"⚠️ 系统检测到 `EEAT_Base_Verified` 目录中仅有 {len(verified_files)} 篇 .md 文件。请补充上传至至少 10 篇！")
+        if not st.session_state.get("verified_loaded", False) or len(verified_files) < 10:
+            st.warning("⛔ 请先在【步骤 3】上传至少 10 篇校验版基石文档，才能解锁 AI 自动裂变。")
         else:
-            st.markdown("""
+            st.markdown('''
             <div class="constraint-warn">
-            ⚠️ <strong>强制约束</strong>：30 篇切片 100% 从 10 篇基石拆解。每层使用 <code>CORP_PROMPT_TEMPLATES</code> 模板库（企业官方视角），
-            强制大模型扮演"企业官方主体"角色。<strong>严禁伪装成普通网民或消费者。</strong><br>
-            <strong>变量注入</strong>: {企业主体}, {用户画像}, {痛点}, {概念}, {品牌_项目}, {品牌_A/B/C}, {五个维度}, {优惠信息}, {CTA行动}<br>
-            <strong>{base_facts}</strong> ← 步骤 1 生成的 10 篇基石内容
+            ⚠️ <strong>强制约束</strong>：30 篇切片 100% 从 10 篇基石拆解。
             </div>
-            """, unsafe_allow_html=True)
+            ''', unsafe_allow_html=True)
 
-            # --- 双轨运行机制：AI 生成 + 手动导入 ---
-            col_gen, col_up = st.columns([1, 1])
+            if st.session_state.get("is_generating_slices"):
+                st.info("🚀 正在后台全速裂变切片中，您可以切换到【交付资产大盘】实时查看产出！")
+                with st.spinner("后台生成中…"):
+                    time.sleep(0.5)
+            elif st.button("✂️ 4. 裂变 30 篇企业视角切片", type="primary", use_container_width=True, key="btn_slices"):
+                vars_ = st.session_state.get("variables", {})
+                eeat_files = sorted(EEAT_VERIFIED_DIR.glob("*.md"))
+                base_facts = "\n\n---\n\n".join(f.read_text(encoding="utf-8") for f in eeat_files)
+                slices_out = SLICES_DIR
+                slices_out.mkdir(exist_ok=True)
 
-            with col_gen:
-                st.markdown("#### 方案 A：AI 全自动裂变")
-                if st.session_state.get("is_generating_slices"):
-                    st.info("🚀 正在后台全速裂变切片中，您可以切换到【交付资产大盘】实时查看产出！")
-                    with st.spinner("后台生成中…"):
-                        time.sleep(0.5)
-                elif st.button("✂️ 4. 裂变 30 篇企业视角切片", type="primary", use_container_width=True, key="btn_slices"):
-                    vars_ = st.session_state.get("variables", {})
-                    eeat_files = sorted(EEAT_VERIFIED_DIR.glob("*.md"))
-                    base_facts = "\n\n---\n\n".join(f.read_text(encoding="utf-8") for f in eeat_files)
-                    slices_out = SLICES_DIR
-                    slices_out.mkdir(exist_ok=True)
+                st.session_state["is_generating_slices"] = True
+                t = threading.Thread(target=background_generate_slices, args=(vars_, base_facts, slices_out, use_simulate, st.session_state["api_key"], st.session_state.get("llm_provider", "DeepSeek")))
+                t.start()
+                add_log("🚀 后台切片线程已启动")
+                st.rerun()
 
-                    st.session_state["is_generating_slices"] = True
-                    t = threading.Thread(target=background_generate_slices, args=(vars_, base_facts, slices_out, use_simulate, st.session_state["api_key"], st.session_state.get("llm_provider", "DeepSeek")))
-                    t.start()
-                    add_log("🚀 后台切片线程已启动")
-                    st.rerun()
+    with col_up:
+        st.markdown("#### 方案 B：直接导入已有切片")
+        st.info("💡 如果已有写好的切片，请在此直接上传，**无视前置条件**。")
+        uploaded_slices = st.file_uploader(
+            "在此批量上传切片 (.md / .docx / .txt)",
+            type=["md", "docx", "txt"],
+            accept_multiple_files=True,
+            key="fu_slices_skip",
+            help="支持批量框选上传。上传后将自动跳过生成，直接解锁后续步骤。"
+        )
+        if st.button("📥 保存上传并解锁下一步", type="secondary", use_container_width=True, key="btn_upload_slices"):
+            if not uploaded_slices:
+                st.error("🚨 请先将文件拖拽到上方虚线框内！")
+            else:
+                SLICES_DIR.mkdir(parents=True, exist_ok=True)
+                saved_count = 0
+                for uf in uploaded_slices:
+                    try:
+                        fname, content = extract_text_from_upload(uf)
+                        safe_write_file(SLICES_DIR, f"{Path(fname).stem}.md", content)
+                        saved_count += 1
+                    except Exception as e:
+                        st.warning(f"⚠️ 无法保存 {uf.name}: {e}")
 
-            with col_up:
-                st.markdown("#### 方案 B：直接导入已有切片")
-                uploaded_slices = st.file_uploader(
-                    "如果已有切片，请在此直接批量上传 (.md / .docx)",
-                    type=["md", "docx", "txt"],
-                    accept_multiple_files=True,
-                    key="fu_slices_skip",
-                    help="支持批量框选上传。上传后将自动跳过生成，直接解锁后续步骤。"
-                )
-                if st.button("📥 保存上传并解锁下一步", type="secondary", use_container_width=True, key="btn_upload_slices"):
-                    if not uploaded_slices:
-                        st.error("🚨 请先将文件拖拽到上方虚线框内！")
-                    else:
-                        SLICES_DIR.mkdir(parents=True, exist_ok=True)
-                        saved_count = 0
-                        for uf in uploaded_slices:
-                            try:
-                                fname, content = extract_text_from_upload(uf)
-                                safe_write_file(SLICES_DIR, f"{Path(fname).stem}.md", content)
-                                saved_count += 1
-                            except Exception as e:
-                                st.warning(f"⚠️ 无法保存 {uf.name}: {e}")
-
-                        st.session_state["slices_generated"] = True
-                        add_log(f"✅ 手动导入了 {saved_count} 篇切片 → Slices_30/")
-                        st.toast(f"✅ 成功导入 {saved_count} 篇切片！后续步骤已解锁", icon="🔓")
-                        st.rerun()
+                st.session_state["slices_generated"] = True
+                add_log(f"✅ 手动导入了 {saved_count} 篇切片 → Slices_30/")
+                st.toast(f"✅ 成功导入 {saved_count} 篇切片！后续步骤已解锁", icon="🔓")
+                st.rerun()
 
     # --- 实时进度可视化 (切片) ---
     if SLICES_DIR.exists():
@@ -2122,8 +2121,10 @@ elif st.session_state["page"].startswith("⚙️"):
                 for sf in slice_files:
                     st.caption(f"📄 {sf.name}")
 
-    if st.session_state["slices_generated"]:
-        st.success(f"✅ 已裂变 30 篇三级切片 → `{PROD_DIR}/Slices_30/`")
+    if st.session_state.get("slices_generated"):
+        st.success(f"✅ 已完成 30 篇三级切片 → `{PROD_DIR}/Slices_30/`")
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
 
