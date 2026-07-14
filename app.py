@@ -223,6 +223,7 @@ def get_workspace_paths(client_name: str) -> dict:
         "general": ws / "Production_Output" / "UGC_160" / "General_96",
         "specific": ws / "Production_Output" / "UGC_160" / "Specific_64",
         "bluev": ws / "Production_Output" / "BlueV_Scripts_30",
+        "cases": ws / "Cases_Base",
     }
     for d in dirs.values():
         d.mkdir(parents=True, exist_ok=True)
@@ -1376,6 +1377,16 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
         global_base_facts_ugc = "\n\n---\n\n".join(f.read_text(encoding="utf-8") for f in all_slice_files)
     print(f"[后台 UGC] 全局知识重载完成，共 {len(all_slice_files) if SLICES_DIR.exists() else 0} 篇切片")
 
+    # --- 案例知识库重载与拆解 ---
+    cases_dir = WSP["cases"] if 'WSP' in dir() else WORKSPACES_ROOT / DEFAULT_WORKSPACE / "Cases_Base"
+    case_pool = []
+    if cases_dir.exists():
+        for f in cases_dir.glob("*.md"):
+            raw_cases = f.read_text(encoding="utf-8")
+            split_cases = [c.strip() for c in raw_cases.split("---") if len(c.strip()) > 50]
+            case_pool.extend(split_cases)
+    print(f"[后台 UGC] 案例库重载完成，共识别到 {len(case_pool)} 个独立案例")
+
     # --- Part A: 96 篇通用（精准清单驱动，零随机）---
     manifest_records = []
     print("[后台 UGC] Part A: 96 篇通用（精准清单）…")
@@ -1412,8 +1423,13 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
         prompt_base = template
         for k, v in fmt_args.items():
             prompt_base = prompt_base.replace(f"{{{k}}}", str(v))
+        # 动态案例注入机制
+        case_injection = ""
+        if case_pool:
+            selected_case = random.choice(case_pool)
+            case_injection = f"\n\n【本篇专属背景案例】\n你必须将以下真实案例作为你本次写作的核心故事背景，并将其极其自然地融入到你的角色叙述中：\n{selected_case}"
         success, content = call_llm(
-            prompt=prompt_base + f"\n\n输出{task_id}篇通用。" + title_instruction + platform_style + build_variance_instruction() + title_rule_ugc + brand_exposure_rule + persona_enforcer,
+            prompt=prompt_base + f"\n\n输出{task_id}篇通用。" + title_instruction + platform_style + build_variance_instruction() + title_rule_ugc + brand_exposure_rule + persona_enforcer + case_injection,
             system_prompt=UGC_SYSTEM_PROMPT, api_key=api_key,
             temperature=round(random.uniform(0.30, 0.40), 2), max_tokens=2500, simulate=use_simulate,
             llm_provider=llm_provider,
@@ -1465,7 +1481,12 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
         prompt_base = template
         for k, v in fmt_args.items():
             prompt_base = prompt_base.replace(f"{{{k}}}", str(v))
-        final_prompt = prompt_base + f"\n\n输出{engine}专属。" + title_instruction + adaptation + build_variance_instruction() + title_rule_ugc + brand_exposure_rule + persona_enforcer
+        # 动态案例注入机制
+        case_injection_b = ""
+        if case_pool:
+            selected_case = random.choice(case_pool)
+            case_injection_b = f"\n\n【本篇专属背景案例】\n你必须将以下真实案例作为你本次写作的核心故事背景，并将其极其自然地融入到你的角色叙述中：\n{selected_case}"
+        final_prompt = prompt_base + f"\n\n输出{engine}专属。" + title_instruction + adaptation + build_variance_instruction() + title_rule_ugc + brand_exposure_rule + persona_enforcer + case_injection_b
         success, content = call_llm(
             prompt=final_prompt, system_prompt=UGC_SYSTEM_PROMPT, api_key=api_key,
             temperature=round(random.uniform(0.30, 0.40), 2), max_tokens=2500, simulate=use_simulate,
@@ -2296,6 +2317,20 @@ elif st.session_state["page"].startswith("⚙️"):
         <strong>专属 64 篇</strong>: 按引擎特征改写 · 配额对齐《月度最小交付单元》
         </div>
         """, unsafe_allow_html=True)
+
+            # --- 案例库上传入口 ---
+            st.markdown("#### 📖 [可选] 外挂独立案例知识库")
+            st.caption("上传包含大量真实客户案例的文档。建议不同案例之间用 `---` 分隔。系统将在生成 160 篇 UGC 时动态随机抽取，避免案例重复。")
+            uploaded_cases = st.file_uploader("上传独立案例库 (.txt / .md)", type=["txt", "md"], accept_multiple_files=True, key="fu_cases")
+            if st.button("📥 保存案例库", key="btn_save_cases"):
+                if uploaded_cases:
+                    cases_dir = WSP["cases"]
+                    cases_dir.mkdir(parents=True, exist_ok=True)
+                    for uc in uploaded_cases:
+                        fname, content = extract_text_from_upload(uc)
+                        safe_write_file(cases_dir, f"{Path(fname).stem}.md", content)
+                    st.toast(f"✅ 成功保存 {len(uploaded_cases)} 个案例文件！", icon="📦")
+                    st.rerun()
 
             if st.session_state.get("is_generating_ugc"):
                 st.info("🚀 正在后台全速生成 UGC 中，您可以切换到【交付资产大盘】实时查看产出！")
