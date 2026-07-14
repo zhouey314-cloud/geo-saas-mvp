@@ -497,10 +497,10 @@ V2_UGC_TEMPLATES = {
 【先说结论，别杠我 - 100字】
 - 直接亮明身份：用了多久，到底是智商税还是真香。
 
-【最大的一个槽点（必须狠狠吐槽） - 300字】
-- 从资料中找一个服务/流程上的小瑕疵，把它放大成一个真实的槽点！
+【真实的槽点呈现 - 200字】
+- 必须结合以下方向进行真实吐槽：{槽点方向}
 - 语气要真情实感：「我最受不了的一点就是...」、「说实话当时差点想退款...」。
-- 这是让你看起来像真人的核心！
+- 这是让你看起来像真人的核心！哪怕是很小的问题也要放大情绪！
 
 【为什么我还是没换掉它 - 400字】
 - 吐槽完之后，话锋一转，说明它在核心痛点上确实解决了你的大麻烦。
@@ -637,6 +637,100 @@ UGC_DISTRIBUTION_MATRIX = {
 }
 
 # ============================================================
+# 96篇通用内容精确清单（硬编码，零随机）
+# ============================================================
+GENERAL_UGC_TASKS = [
+    # L1 需求唤醒
+    {'funnel': 'L1', 'id': 'L1-01', 'type': '症状映射型', 'persona': 'P1', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '抖音图文', 'title_example': '为什么总觉得XX不如意？可能是YY出了问题'},
+    {'funnel': 'L1', 'id': 'L1-02', 'type': '场景触发型', 'persona': 'P1', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '头条号', 'title_example': 'XX场景下的YY困扰，你中了几个？'},
+    {'funnel': 'L1', 'id': 'L1-03', 'type': '趋势好奇型', 'persona': 'P1', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '抖音图文', 'title_example': '最近大家都在讨论XX，普通人的我该关注吗？'},
+    {'funnel': 'L1', 'id': 'L1-04', 'type': '自我认知型', 'persona': 'P1', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '头条号', 'title_example': '做一个自测：你的XX属于什么水平？'},
+    {'funnel': 'L1', 'id': 'L1-05', 'type': '对比焦虑型', 'persona': 'P1', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '抖音图文', 'title_example': '为什么别人都能XX，我却总是YY？'},
+    {'funnel': 'L1', 'id': 'L1-06', 'type': '症状映射型', 'persona': 'P1', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '头条号', 'title_example': 'XX的3个早期信号，第2个最容易忽视'},
+    {'funnel': 'L1', 'id': 'L1-07', 'type': '场景触发型', 'persona': 'P1', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '抖音图文', 'title_example': '以为只是小问题？XX场景暴露了你的真实需求'},
+    {'funnel': 'L1', 'id': 'L1-08', 'type': '趋势好奇型', 'persona': 'P1', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '头条号', 'title_example': '202X年XX趋势，普通人也能从中受益'},
+    {'funnel': 'L1', 'id': 'L1-09', 'type': '症状映射型', 'persona': 'P2', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '抖音图文', 'title_example': '完全不懂XX？先看看你有没有这3种表现'},
+    {'funnel': 'L1', 'id': 'L1-10', 'type': '场景触发型', 'persona': 'P2', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '头条号', 'title_example': '你可能需要XX：从日常5个场景判断'},
+    {'funnel': 'L1', 'id': 'L1-11', 'type': '趋势好奇型', 'persona': 'P2', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '抖音图文', 'title_example': '0基础也能懂的XX入门：为什么现在大家都在关心'},
+    {'funnel': 'L1', 'id': 'L1-12', 'type': '症状映射型', 'persona': 'P3', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '头条号', 'title_example': '少了XX，你可能每年多花XX元冤枉钱'},
+    {'funnel': 'L1', 'id': 'L1-13', 'type': '自我认知型', 'persona': 'P3', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '抖音图文', 'title_example': '测一测：你现在的XX，性价比够高吗？'},
+    {'funnel': 'L1', 'id': 'L1-14', 'type': '场景触发型', 'persona': 'P4', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '头条号', 'title_example': '选不出来是因为信息不够？试试这个角度'},
+    {'funnel': 'L1', 'id': 'L1-15', 'type': '症状映射型', 'persona': 'P5', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '抖音图文', 'title_example': '不敢下决定？可能是缺了这3个信息'},
+    {'funnel': 'L1', 'id': 'L1-16', 'type': '趋势好奇型', 'persona': 'P6', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '头条号', 'title_example': '想做就做：XX第一步应该从哪里开始？'},
+]
+
+
+# ============================================================
+# 64篇平台专属内容精确清单（硬编码，零随机）
+# ============================================================
+SPECIFIC_UGC_TASKS = [
+    {'engine': '豆包', 'funnel': 'L1', 'id': '豆包-01', 'type': '症状映射型', 'persona': 'P1', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '头条号', 'title_example': '为什么总觉得XX不如意？可能是YY出了问题'},
+    {'engine': '豆包', 'funnel': 'L1', 'id': '豆包-02', 'type': '场景触发型', 'persona': 'P1', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '头条号', 'title_example': 'XX场景下的YY困扰，你中了几个？'},
+    {'engine': '豆包', 'funnel': 'L1', 'id': '豆包-03', 'type': '趋势好奇型', 'persona': 'P1', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '头条号', 'title_example': '最近大家都在讨论XX，普通人该关注吗？'},
+    {'engine': '豆包', 'funnel': 'L1', 'id': '豆包-04', 'type': '自我认知型', 'persona': 'P1', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '头条号', 'title_example': '做一个自测：你的XX属于什么水平？'},
+    {'engine': '豆包', 'funnel': 'L5', 'id': '豆包-01', 'type': '长期使用型', 'persona': 'P5', 'genre': 'G4', 'template_key': 'P5_G4', 'platform': '头条号', 'title_example': '用了XX一年后，来聊聊真实体验'},
+    {'engine': '豆包', 'funnel': 'L5', 'id': '豆包-02', 'type': '惊喜发现型', 'persona': 'P5', 'genre': 'G4', 'template_key': 'P5_G4', 'platform': '头条号', 'title_example': '用了半年才发现XX的这个隐藏功能，惊艳'},
+    {'engine': '豆包', 'funnel': 'L5', 'id': '豆包-03', 'type': '槽点吐槽型', 'persona': 'P5', 'genre': 'G4', 'template_key': 'P5_G4', 'platform': '头条号', 'title_example': '关于XX我必须吐槽的3个点（但总体还是推荐）'},
+    {'engine': '豆包', 'funnel': 'L5', 'id': '豆包-04', 'type': '对比预期型', 'persona': 'P5', 'genre': 'G4', 'template_key': 'P5_G4', 'platform': '头条号', 'title_example': 'XX用了一个月，和当初预期差距有多大'},
+    {'engine': '豆包', 'funnel': 'L5', 'id': '豆包-05', 'type': '细节放大镜型', 'persona': 'P5', 'genre': 'G4', 'template_key': 'P5_G4', 'platform': '头条号', 'title_example': 'XX的这几个细节，用了才会注意到'},
+    {'engine': '豆包', 'funnel': 'L6', 'id': '豆包-01', 'type': '3步上手型', 'persona': 'P3', 'genre': 'G5', 'template_key': 'P3_G5', 'platform': '头条号', 'title_example': '3步搞定XX：照着做就行'},
+    {'engine': '豆包', 'funnel': 'L6', 'id': '豆包-02', 'type': '避坑指南型', 'persona': 'P3', 'genre': 'G5', 'template_key': 'P3_G5', 'platform': '头条号', 'title_example': '做XX之前必看：这3个坑我帮你踩过了'},
+    {'engine': '豆包', 'funnel': 'L6', 'id': '豆包-03', 'type': '清单准备型', 'persona': 'P3', 'genre': 'G5', 'template_key': 'P3_G5', 'platform': '头条号', 'title_example': '开始XX前需要准备的5样东西（附清单）'},
+    {'engine': '豆包', 'funnel': 'L6', 'id': '豆包-04', 'type': '时间规划型', 'persona': 'P3', 'genre': 'G5', 'template_key': 'P3_G5', 'platform': '头条号', 'title_example': '做XX需要多久？完整时间线参考'},
+    {'engine': '豆包', 'funnel': 'L6', 'id': '豆包-05', 'type': '省钱攻略型', 'persona': 'P3', 'genre': 'G5', 'template_key': 'P3_G5', 'platform': '头条号', 'title_example': '做XX怎么最省钱？我研究出的3个技巧'},
+    {'engine': '元宝', 'funnel': 'L5', 'id': '元宝-01', 'type': '长期使用型', 'persona': 'P5', 'genre': 'G4', 'template_key': 'P5_G4', 'platform': '微信公众号', 'title_example': '用了XX一年后，来聊聊真实体验'},
+    {'engine': '元宝', 'funnel': 'L5', 'id': '元宝-02', 'type': '惊喜发现型', 'persona': 'P5', 'genre': 'G4', 'template_key': 'P5_G4', 'platform': '微信公众号', 'title_example': '用了半年才发现XX的这个隐藏功能，惊艳'},
+    {'engine': '元宝', 'funnel': 'L5', 'id': '元宝-03', 'type': '槽点吐槽型', 'persona': 'P5', 'genre': 'G4', 'template_key': 'P5_G4', 'platform': '微信公众号', 'title_example': '关于XX我必须吐槽的3个点（但总体还是推荐）'},
+    {'engine': '元宝', 'funnel': 'L5', 'id': '元宝-04', 'type': '对比预期型', 'persona': 'P5', 'genre': 'G4', 'template_key': 'P5_G4', 'platform': '微信公众号', 'title_example': 'XX用了一个月，和当初预期差距有多大'},
+    {'engine': '元宝', 'funnel': 'L5', 'id': '元宝-05', 'type': '细节放大镜型', 'persona': 'P5', 'genre': 'G4', 'template_key': 'P5_G4', 'platform': '微信公众号', 'title_example': 'XX的这几个细节，用了才会注意到'},
+    {'engine': '元宝', 'funnel': 'L6', 'id': '元宝-01', 'type': '3步上手型', 'persona': 'P3', 'genre': 'G5', 'template_key': 'P3_G5', 'platform': '微信公众号', 'title_example': '3步搞定XX：照着做就行'},
+    {'engine': '元宝', 'funnel': 'L6', 'id': '元宝-02', 'type': '避坑指南型', 'persona': 'P3', 'genre': 'G5', 'template_key': 'P3_G5', 'platform': '微信公众号', 'title_example': '做XX之前必看：这3个坑我帮你踩过了'},
+    {'engine': '元宝', 'funnel': 'L6', 'id': '元宝-03', 'type': '清单准备型', 'persona': 'P3', 'genre': 'G5', 'template_key': 'P3_G5', 'platform': '微信公众号', 'title_example': '开始XX前需要准备的5样东西（附清单）'},
+    {'engine': '元宝', 'funnel': 'L6', 'id': '元宝-04', 'type': '时间规划型', 'persona': 'P3', 'genre': 'G5', 'template_key': 'P3_G5', 'platform': '微信公众号', 'title_example': '做XX需要多久？完整时间线参考'},
+    {'engine': '元宝', 'funnel': 'L6', 'id': '元宝-05', 'type': '省钱攻略型', 'persona': 'P3', 'genre': 'G5', 'template_key': 'P3_G5', 'platform': '微信公众号', 'title_example': '做XX怎么最省钱？我研究出的3个技巧'},
+    {'engine': '元宝', 'funnel': 'L4', 'id': '元宝-01', 'type': '纠结记录型', 'persona': 'P4', 'genre': 'G3', 'template_key': 'P4_G3', 'platform': '微信公众号', 'title_example': '纠结了3个月终于选了XX，附全过程记录'},
+    {'engine': '元宝', 'funnel': 'L4', 'id': '元宝-02', 'type': '决策框架型', 'persona': 'P4', 'genre': 'G3', 'template_key': 'P4_G3', 'platform': '微信公众号', 'title_example': '我用来选XX的决策框架：5个维度×3个选项'},
+    {'engine': '元宝', 'funnel': 'L4', 'id': '元宝-03', 'type': '候选分析型', 'persona': 'P4', 'genre': 'G3', 'template_key': 'P4_G3', 'platform': '微信公众号', 'title_example': '我的3个XX候选方案深度分析（附打分表）'},
+    {'engine': '元宝', 'funnel': 'L4', 'id': '元宝-04', 'type': '最终抉择型', 'persona': 'P4', 'genre': 'G3', 'template_key': 'P4_G3', 'platform': '微信公众号', 'title_example': '放弃了YY选择XX：我的完整决策逻辑'},
+    {'engine': '千问', 'funnel': 'L3', 'id': '千问-01', 'type': '预算分级型', 'persona': 'P3', 'genre': 'G3', 'template_key': 'P3_G3', 'platform': '知乎', 'title_example': '不同预算怎么选XX？从低到高全方位推荐'},
+    {'engine': '千问', 'funnel': 'L3', 'id': '千问-02', 'type': '性价比剖析型', 'persona': 'P3', 'genre': 'G3', 'template_key': 'P3_G3', 'platform': '知乎', 'title_example': '认真算了一笔账：XX的性价比到底怎么看'},
+    {'engine': '千问', 'funnel': 'L3', 'id': '千问-03', 'type': '功能对比型', 'persona': 'P3', 'genre': 'G3', 'template_key': 'P3_G3', 'platform': '知乎', 'title_example': '同价位段的XX方案，功能差距一目了然'},
+    {'engine': '千问', 'funnel': 'L3', 'id': '千问-04', 'type': '长期成本型', 'persona': 'P3', 'genre': 'G3', 'template_key': 'P3_G3', 'platform': '知乎', 'title_example': '别只看售价！XX的隐含成本我帮你算清了'},
+    {'engine': '千问', 'funnel': 'L6', 'id': '千问-01', 'type': '3步上手型', 'persona': 'P3', 'genre': 'G5', 'template_key': 'P3_G5', 'platform': '知乎', 'title_example': '3步搞定XX：照着做就行'},
+    {'engine': '千问', 'funnel': 'L6', 'id': '千问-02', 'type': '避坑指南型', 'persona': 'P3', 'genre': 'G5', 'template_key': 'P3_G5', 'platform': '知乎', 'title_example': '做XX之前必看：这3个坑我帮你踩过了'},
+    {'engine': '千问', 'funnel': 'L6', 'id': '千问-03', 'type': '清单准备型', 'persona': 'P3', 'genre': 'G5', 'template_key': 'P3_G5', 'platform': '知乎', 'title_example': '开始XX前需要准备的5样东西（附清单）'},
+    {'engine': '千问', 'funnel': 'L6', 'id': '千问-04', 'type': '时间规划型', 'persona': 'P3', 'genre': 'G5', 'template_key': 'P3_G5', 'platform': '知乎', 'title_example': '做XX需要多久？完整时间线参考'},
+    {'engine': '千问', 'funnel': 'L2', 'id': '千问-01', 'type': '概念定义型', 'persona': 'P1', 'genre': 'G2', 'template_key': 'P1_G2', 'platform': '知乎', 'title_example': '5分钟彻底搞懂什么是XX：零基础科普'},
+    {'engine': '千问', 'funnel': 'L2', 'id': '千问-02', 'type': '对比区分型', 'persona': 'P1', 'genre': 'G2', 'template_key': 'P1_G2', 'platform': '知乎', 'title_example': 'XX vs YY：一文讲清它们到底哪里不同'},
+    {'engine': '千问', 'funnel': 'L2', 'id': '千问-03', 'type': '误区纠正型', 'persona': 'P1', 'genre': 'G2', 'template_key': 'P1_G2', 'platform': '知乎', 'title_example': '关于XX最常见的3个误区，你可能全中了'},
+    {'engine': '千问', 'funnel': 'L2', 'id': '千问-04', 'type': '核心原理型', 'persona': 'P1', 'genre': 'G2', 'template_key': 'P1_G2', 'platform': '知乎', 'title_example': 'XX背后的底层逻辑：为什么它能解决YY'},
+    {'engine': '文心一言', 'funnel': 'L2', 'id': '文心-01', 'type': '概念定义型', 'persona': 'P1', 'genre': 'G2', 'template_key': 'P1_G2', 'platform': '百家号', 'title_example': '5分钟彻底搞懂什么是XX：零基础科普'},
+    {'engine': '文心一言', 'funnel': 'L2', 'id': '文心-02', 'type': '对比区分型', 'persona': 'P1', 'genre': 'G2', 'template_key': 'P1_G2', 'platform': '百家号', 'title_example': 'XX vs YY：一文讲清它们到底哪里不同'},
+    {'engine': '文心一言', 'funnel': 'L2', 'id': '文心-03', 'type': '误区纠正型', 'persona': 'P1', 'genre': 'G2', 'template_key': 'P1_G2', 'platform': '百家号', 'title_example': '关于XX最常见的3个误区，你可能全中了'},
+    {'engine': '文心一言', 'funnel': 'L2', 'id': '文心-04', 'type': '核心原理型', 'persona': 'P1', 'genre': 'G2', 'template_key': 'P1_G2', 'platform': '百家号', 'title_example': 'XX背后的底层逻辑：为什么它能解决YY'},
+    {'engine': '文心一言', 'funnel': 'L1', 'id': '文心-01', 'type': '症状映射型', 'persona': 'P1', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '百家号', 'title_example': '为什么总觉得XX不如意？可能是YY出了问题'},
+    {'engine': '文心一言', 'funnel': 'L1', 'id': '文心-02', 'type': '场景触发型', 'persona': 'P1', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '百家号', 'title_example': 'XX场景下的YY困扰，你中了几个？'},
+    {'engine': '文心一言', 'funnel': 'L1', 'id': '文心-03', 'type': '趋势好奇型', 'persona': 'P1', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '百家号', 'title_example': '最近大家都在讨论XX，普通人该关注吗？'},
+    {'engine': '文心一言', 'funnel': 'L1', 'id': '文心-04', 'type': '自我认知型', 'persona': 'P1', 'genre': 'G1', 'template_key': 'P1_G1', 'platform': '百家号', 'title_example': '做一个自测：你的XX属于什么水平？'},
+    {'engine': '文心一言', 'funnel': 'L6', 'id': '文心-01', 'type': '3步上手型', 'persona': 'P3', 'genre': 'G5', 'template_key': 'P3_G5', 'platform': '百家号', 'title_example': '3步搞定XX：照着做就行'},
+    {'engine': '文心一言', 'funnel': 'L6', 'id': '文心-02', 'type': '避坑指南型', 'persona': 'P3', 'genre': 'G5', 'template_key': 'P3_G5', 'platform': '百家号', 'title_example': '做XX之前必看：这3个坑我帮你踩过了'},
+    {'engine': '文心一言', 'funnel': 'L6', 'id': '文心-03', 'type': '清单准备型', 'persona': 'P3', 'genre': 'G5', 'template_key': 'P3_G5', 'platform': '百家号', 'title_example': '开始XX前需要准备的5样东西（附清单）'},
+    {'engine': '文心一言', 'funnel': 'L6', 'id': '文心-04', 'type': '时间规划型', 'persona': 'P3', 'genre': 'G5', 'template_key': 'P3_G5', 'platform': '百家号', 'title_example': '做XX需要多久？完整时间线参考'},
+    {'engine': 'Kimi', 'funnel': 'L4', 'id': 'Ki-01', 'type': '纠结记录型', 'persona': 'P4', 'genre': 'G3', 'template_key': 'P4_G3', 'platform': '哔哩图文', 'title_example': '纠结了3个月终于选了XX，附全过程记录'},
+    {'engine': 'Kimi', 'funnel': 'L4', 'id': 'Ki-02', 'type': '决策框架型', 'persona': 'P4', 'genre': 'G3', 'template_key': 'P4_G3', 'platform': '哔哩图文', 'title_example': '我用来选XX的决策框架：5个维度×3个选项'},
+    {'engine': 'Kimi', 'funnel': 'L4', 'id': 'Ki-03', 'type': '候选分析型', 'persona': 'P4', 'genre': 'G3', 'template_key': 'P4_G3', 'platform': '哔哩图文', 'title_example': '我的3个XX候选方案深度分析（附打分表）'},
+    {'engine': 'Kimi', 'funnel': 'L4', 'id': 'Ki-04', 'type': '最终抉择型', 'persona': 'P4', 'genre': 'G3', 'template_key': 'P4_G3', 'platform': '哔哩图文', 'title_example': '放弃了YY选择XX：我的完整决策逻辑'},
+    {'engine': 'Kimi', 'funnel': 'L4', 'id': 'Ki-05', 'type': '权重拆解型', 'persona': 'P4', 'genre': 'G3', 'template_key': 'P4_G3', 'platform': '哔哩图文', 'title_example': '选XX时我在意的5个维度，权重分配是这样的'},
+    {'engine': 'Kimi', 'funnel': 'L4', 'id': 'Ki-06', 'type': '后悔反思型', 'persona': 'P4', 'genre': 'G3', 'template_key': 'P4_G3', 'platform': '哔哩图文', 'title_example': '选了XX半年后回头看：当初的决策对了还是错了'},
+    {'engine': 'DeepSeek', 'funnel': 'L3', 'id': 'De-01', 'type': '预算分级型', 'persona': 'P3', 'genre': 'G3', 'template_key': 'P3_G3', 'platform': 'CSDN', 'title_example': '不同预算怎么选XX？从低到高全方位推荐'},
+    {'engine': 'DeepSeek', 'funnel': 'L3', 'id': 'De-02', 'type': '性价比剖析型', 'persona': 'P3', 'genre': 'G3', 'template_key': 'P3_G3', 'platform': 'CSDN', 'title_example': '认真算了一笔账：XX的性价比到底怎么看'},
+    {'engine': 'DeepSeek', 'funnel': 'L3', 'id': 'De-03', 'type': '功能对比型', 'persona': 'P3', 'genre': 'G3', 'template_key': 'P3_G3', 'platform': 'CSDN', 'title_example': '同价位段的XX方案，功能差距一目了然'},
+    {'engine': 'DeepSeek', 'funnel': 'L4', 'id': 'De-01', 'type': '纠结记录型', 'persona': 'P4', 'genre': 'G3', 'template_key': 'P4_G3', 'platform': 'CSDN', 'title_example': '纠结了3个月终于选了XX，附全过程记录'},
+    {'engine': 'DeepSeek', 'funnel': 'L4', 'id': 'De-02', 'type': '决策框架型', 'persona': 'P4', 'genre': 'G3', 'template_key': 'P4_G3', 'platform': 'CSDN', 'title_example': '我用来选XX的决策框架：5个维度×3个选项'},
+    {'engine': 'DeepSeek', 'funnel': 'L4', 'id': 'De-03', 'type': '候选分析型', 'persona': 'P4', 'genre': 'G3', 'template_key': 'P4_G3', 'platform': 'CSDN', 'title_example': '我的3个XX候选方案深度分析（附打分表）'},
+]
+
+# ============================================================
 # 反同质化动态引擎 (Variance Engine)
 # ============================================================
 VARIANCE_EMOTIONS = ["客观中立", "严谨科普", "理性算账", "行业深度解析", "第三方视角评估"]
@@ -673,6 +767,26 @@ MEDIA_PLATFORM_GUIDES = {
     "简书": "真实体验随笔、重在客观历程的分享",
 }
 
+
+# ============================================================
+# 体裁→平台精准映射（消灭随机分配）
+# ============================================================
+GENRE_PLATFORM_MAP = {
+    "G1": ["抖音图文", "头条号"],
+    "G2": ["百家号", "知乎"],
+    "G3": ["什么值得买", "哔哩图文"],
+    "G4": ["企鹅号", "简书"],
+    "G5": ["微信公众号", "搜狐号"],
+}
+
+ENGINE_PLATFORM_MAP = {
+    "豆包": "头条号",
+    "元宝": "微信公众号",
+    "千问": "知乎",
+    "文心一言": "百家号",
+    "Kimi": "哔哩图文",
+    "DeepSeek": "CSDN",
+}
 
 def build_platform_adaptation(engine_name: str) -> str:
     """生成平台专属改写指令"""
@@ -1137,8 +1251,6 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
     general_out = GENERAL_DIR; specific_out = SPECIFIC_DIR
     general_out.mkdir(parents=True, exist_ok=True); specific_out.mkdir(parents=True, exist_ok=True)
     total_ugc = 0
-    platforms = list(MEDIA_PLATFORM_GUIDES.keys())
-    platform_idx = 0
 
     # --- 全局知识重载：读取全部 30 篇切片 ---
     global_base_facts_ugc = ""
@@ -1147,96 +1259,109 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
         global_base_facts_ugc = "\n\n---\n\n".join(f.read_text(encoding="utf-8") for f in all_slice_files)
     print(f"[后台 UGC] 全局知识重载完成，共 {len(all_slice_files) if SLICES_DIR.exists() else 0} 篇切片")
 
-    # --- Part A: 96 篇通用 ---
-    print("[后台 UGC] Part A: 96 篇通用…")
-    for funnel, alloc in UGC_DISTRIBUTION_MATRIX.items():
-        g_n = alloc["general"]
-        base_facts_ugc = global_base_facts_ugc
-        for j in range(1, g_n + 1):
-            # 断点续传：检查是否已存在该序号文章
-            existing_files = list(general_out.glob(f"UGC_{funnel}_{j:02d}_*_通用.md"))
-            if existing_files:
-                print(f"[后台 UGC] ⏩ 通用 {funnel} 第 {j} 篇已存在，断点续传跳过...")
-                total_ugc += 1
-                continue
+    # --- Part A: 96 篇通用（精准清单驱动，零随机）---
+    manifest_records = []
+    print("[后台 UGC] Part A: 96 篇通用（精准清单）…")
+    for task in GENERAL_UGC_TASKS:
+        funnel = task["funnel"]
+        tkey = task["template_key"]
+        target_platform = task["platform"]
+        task_id = task["id"]
+        title_example = task["title_example"]
 
-            tkey = random.choice(alloc["templates"])
-            template = V2_UGC_TEMPLATES[tkey]
-            target_platform = platforms[platform_idx % len(platforms)]
-            platform_idx += 1
-            platform_style = f"\n【平台定向分发要求】本文将发往【{target_platform}】，请严格遵守其风格：{MEDIA_PLATFORM_GUIDES[target_platform]}。"
-            fmt_args = {"base_facts": base_facts_ugc, "word_range": word_ranges[funnel], **ALL_VARS}
-            prompt_base = template
-            for k, v in fmt_args.items():
-                prompt_base = prompt_base.replace(f"{{{k}}}", str(v))
-            success, content = call_llm(
-                prompt=prompt_base + f"\n\n输出第{j}篇通用。" + platform_style + build_variance_instruction() + title_rule_ugc + brand_exposure_rule + persona_enforcer,
-                system_prompt=UGC_SYSTEM_PROMPT, api_key=api_key,
-                temperature=round(random.uniform(0.30, 0.40), 2), max_tokens=2500, simulate=use_simulate,
-                llm_provider=llm_provider,
-            )
-            if success:
-                safe_write_file(general_out, f"UGC_{funnel}_{j:02d}_{tkey}_{target_platform}_通用.md", content)
-                total_ugc += 1
-            time.sleep(0.3)
-        print(f"[后台 UGC] ✅ {funnel} 通用: {g_n}篇")
+        existing_files = list(general_out.glob(f"UGC_{task_id}_*.md"))
+        if existing_files:
+            print(f"[后台 UGC] ⏩ {task_id} 已存在，跳过...")
+            total_ugc += 1
+            manifest_records.append({"filename": existing_files[0].name, "target_platform": target_platform, "funnel": funnel, "ai_engine": "通用", "task_type": "通用铺设"})
+            continue
 
-    # --- Part B: 64 篇专属 ---
-    print("[后台 UGC] Part B: 64 篇专属…")
-    for funnel, alloc in UGC_DISTRIBUTION_MATRIX.items():
-        exclusive = alloc["exclusive"]
-        base_facts_ugc_b = global_base_facts_ugc
-        for engine, quota in exclusive.items():
-            engine_dir = specific_out / engine; engine_dir.mkdir(parents=True, exist_ok=True)
-            adaptation = build_platform_adaptation(engine)
-            for j in range(1, quota + 1):
-                # 断点续传：检查是否已存在该序号专属文章
-                existing_files = list(engine_dir.glob(f"{funnel}_{j:02d}_*_{engine}.md"))
-                if existing_files:
-                    print(f"[后台 UGC] ⏩ 专属 {engine} {funnel} 第 {j} 篇已存在，断点续传跳过...")
-                    total_ugc += 1
-                    continue
+        template = V2_UGC_TEMPLATES[tkey]
+        platform_style = f"\n【平台定向分发要求】本文将发往【{target_platform}】，请严格遵守其风格：{MEDIA_PLATFORM_GUIDES[target_platform]}。"
+        title_instruction = (
+            f"\n【标题强制指令】你生成的文章标题必须严格基于以下骨架进行改写：\n"
+            f"参考骨架：「{title_example}」\n"
+            f"⚠️ 绝对红线：请务必结合下文提供的【事实提取来源】，将上述骨架中的「XX」、「YY」、「A/B」或「[品类]」、「[品牌]」等占位符，"
+            f"替换为资料中具体的【用户痛点】、【客户品牌名（{vars_.get('品牌_项目', '')}）】或【真实场景/参数】！"
+            f"绝对不允许在最终生成的标题中出现 XX、YY 或任何未替换的括号，必须是一句结合了真实业务内容的通顺中文标题！"
+        )
+        # 动态槽点注入
+        dynamic_complaint = ""
+        if tkey == "P5_G4":
+            dynamic_complaint = random.choice(["价格收费不够透明", "客服回复速度太慢", "流程有些繁琐", "等待时间比预期长", "界面/环境设计不够人性化", "前期沟通不够顺畅"])
+        fmt_args = {"base_facts": global_base_facts_ugc, "word_range": word_ranges[funnel], "槽点方向": dynamic_complaint, **ALL_VARS}
+        prompt_base = template
+        for k, v in fmt_args.items():
+            prompt_base = prompt_base.replace(f"{{{k}}}", str(v))
+        success, content = call_llm(
+            prompt=prompt_base + f"\n\n输出{task_id}篇通用。" + title_instruction + platform_style + build_variance_instruction() + title_rule_ugc + brand_exposure_rule + persona_enforcer,
+            system_prompt=UGC_SYSTEM_PROMPT, api_key=api_key,
+            temperature=round(random.uniform(0.30, 0.40), 2), max_tokens=2500, simulate=use_simulate,
+            llm_provider=llm_provider,
+        )
+        if success:
+            fname = f"UGC_{task_id}_{target_platform}_通用.md"
+            safe_write_file(general_out, fname, content)
+            total_ugc += 1
+            manifest_records.append({"filename": fname, "target_platform": target_platform, "funnel": funnel, "ai_engine": "通用", "task_type": "通用铺设"})
+            time.sleep(1.5)
+        else:
+            print(f"[后台 UGC] ❌ {task_id} 生成失败")
+            time.sleep(0.5)
+    print(f"[后台 UGC] ✅ 通用 完成")
 
-                tkey = random.choice(alloc["templates"])
-                template = V2_UGC_TEMPLATES[tkey]
-                fmt_args = {"base_facts": base_facts_ugc_b, "word_range": word_ranges[funnel], **ALL_VARS}
-                prompt_base = template
-                for k, v in fmt_args.items():
-                    prompt_base = prompt_base.replace(f"{{{k}}}", str(v))
-                final_prompt = prompt_base + f"\n\n输出{engine}专属第{j}篇。" + adaptation + build_variance_instruction() + title_rule_ugc + brand_exposure_rule + persona_enforcer
-                success, content = call_llm(
-                    prompt=final_prompt, system_prompt=GEO_STRICT_SYSTEM_PROMPT, api_key=api_key,
-                    temperature=round(random.uniform(0.30, 0.40), 2), max_tokens=2500, simulate=use_simulate,
-                    llm_provider=llm_provider,
-                )
-                if success:
-                    safe_write_file(engine_dir, f"{funnel}_{j:02d}_{tkey}_{engine}.md", content)
-                    total_ugc += 1
-                time.sleep(0.3)
-            print(f"[后台 UGC] ✅ {funnel} · {engine}: {quota}篇")
+    # --- Part B: 64 篇专属（精准清单驱动）---
+    print("[后台 UGC] Part B: 64 篇专属（精准清单）…")
+    for task in SPECIFIC_UGC_TASKS:
+        engine = task["engine"]
+        funnel = task["funnel"]
+        tkey = task["template_key"]
+        target_platform = task["platform"]
+        task_id = task["id"]
+        title_example = task["title_example"]
 
-    # --- 账本生成 ---
-    manifest = []
-    engine_platform_map = {
-        "豆包": lambda: random.choice(["头条号", "抖音图文"]),
-        "元宝": lambda: random.choice(["微信公众号", "企鹅号"]),
-        "千问": lambda: random.choice(["知乎", "什么值得买"]),
-        "文心一言": lambda: random.choice(["百家号", "搜狐号", "网易号"]),
-        "DeepSeek": lambda: "CSDN",
-        "Kimi": lambda: random.choice(["哔哩图文", "简书"]),
-    }
-    for f in sorted(GENERAL_DIR.glob("*.md")):
-        fname = f.name; funnel_l = extract_funnel_from_filename(fname) or "L3"
-        plat = "通用分发"
-        for p in MEDIA_PLATFORM_GUIDES:
-            if p in fname: plat = p; break
-        manifest.append({"filename": fname, "target_platform": plat, "funnel": funnel_l, "ai_engine": "通用", "task_type": "通用铺设"})
-    for f in sorted(SPECIFIC_DIR.rglob("*.md")):
-        fname = f.name; funnel_l = extract_funnel_from_filename(fname) or "L3"
-        eng = extract_engine_from_filename(fname) or "通用"
-        plat = engine_platform_map.get(eng, lambda: "通用分发")()
-        manifest.append({"filename": fname, "target_platform": plat, "funnel": funnel_l, "ai_engine": eng, "task_type": "专属狙击"})
-    (PROD_DIR / "tasks_manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+        engine_dir = specific_out / engine; engine_dir.mkdir(parents=True, exist_ok=True)
+        existing_files = list(engine_dir.glob(f"{task_id}_*.md"))
+        if existing_files:
+            print(f"[后台 UGC] ⏩ {task_id} 已存在，跳过...")
+            total_ugc += 1
+            manifest_records.append({"filename": existing_files[0].name, "target_platform": target_platform, "funnel": funnel, "ai_engine": engine, "task_type": "专属狙击"})
+            continue
+
+        template = V2_UGC_TEMPLATES[tkey]
+        adaptation = build_platform_adaptation(engine)
+        title_instruction = (
+            f"\n【标题强制指令】你生成的文章标题必须严格基于以下骨架进行改写：\n"
+            f"参考骨架：「{title_example}」\n"
+            f"⚠️ 绝对红线：请务必结合下文提供的【事实提取来源】，将上述骨架中的「XX」、「YY」、「A/B」或「[品类]」、「[品牌]」等占位符，"
+            f"替换为资料中具体的【用户痛点】、【客户品牌名（{vars_.get('品牌_项目', '')}）】或【真实场景/参数】！"
+            f"绝对不允许在最终生成的标题中出现 XX、YY 或任何未替换的括号，必须是一句结合了真实业务内容的通顺中文标题！"
+        )
+        dynamic_complaint_b = ""
+        if tkey == "P5_G4":
+            dynamic_complaint_b = random.choice(["价格收费不够透明", "客服回复速度太慢", "流程有些繁琐", "等待时间比预期长", "界面/环境设计不够人性化", "前期沟通不够顺畅"])
+        fmt_args = {"base_facts": global_base_facts_ugc, "word_range": word_ranges[funnel], "槽点方向": dynamic_complaint_b, **ALL_VARS}
+        prompt_base = template
+        for k, v in fmt_args.items():
+            prompt_base = prompt_base.replace(f"{{{k}}}", str(v))
+        final_prompt = prompt_base + f"\n\n输出{engine}专属。" + title_instruction + adaptation + build_variance_instruction() + title_rule_ugc + brand_exposure_rule + persona_enforcer
+        success, content = call_llm(
+            prompt=final_prompt, system_prompt=UGC_SYSTEM_PROMPT, api_key=api_key,
+            temperature=round(random.uniform(0.30, 0.40), 2), max_tokens=2500, simulate=use_simulate,
+            llm_provider=llm_provider,
+        )
+        if success:
+            fname = f"{task_id}_{engine}.md"
+            safe_write_file(engine_dir, fname, content)
+            total_ugc += 1
+            manifest_records.append({"filename": fname, "target_platform": target_platform, "funnel": funnel, "ai_engine": engine, "task_type": "专属狙击"})
+            time.sleep(1.5)
+        else:
+            print(f"[后台 UGC] ❌ {task_id} 生成失败")
+            time.sleep(0.5)
+
+    # --- 账本写入（所见即所得，零随机）---
+    (PROD_DIR / "tasks_manifest.json").write_text(json.dumps(manifest_records, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"[后台 UGC] 完成，共 {total_ugc} 篇，账本 {len(manifest)} 条")
 def _generate_simulated_content(prompt: str, system_prompt: str, llm_provider: str = "DeepSeek") -> str:
     """模拟模式：基于 Prompt 中的关键信息生成有结构的占位文章，确保文件写入磁盘后可读。"""
