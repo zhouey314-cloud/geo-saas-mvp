@@ -1054,7 +1054,7 @@ def extract_text_from_upload(uploaded_file) -> Tuple[str, str]:
 
 
 def convert_md_to_docx_bytes(md_content: str) -> bytes:
-    """将 Markdown 纯文本解析并转换为 DOCX 二进制流"""
+    """将 Markdown 纯文本解析并转换为 DOCX 二进制流 (增强版：支持加粗解析)"""
     if not DOCX_AVAILABLE:
         return md_content.encode("utf-8")
 
@@ -1063,19 +1063,36 @@ def convert_md_to_docx_bytes(md_content: str) -> bytes:
         stripped = line.strip()
         if not stripped:
             continue
+
+        # 1. 确定段落类型并剥离前缀
+        p = None
         if stripped.startswith('# '):
-            doc.add_heading(stripped.lstrip('# ').strip(), level=1)
+            p = doc.add_heading(level=1)
+            stripped = stripped.lstrip('# ').strip()
         elif stripped.startswith('## '):
-            doc.add_heading(stripped.lstrip('# ').strip(), level=2)
+            p = doc.add_heading(level=2)
+            stripped = stripped.lstrip('# ').strip()
         elif stripped.startswith('### '):
-            doc.add_heading(stripped.lstrip('# ').strip(), level=3)
+            p = doc.add_heading(level=3)
+            stripped = stripped.lstrip('# ').strip()
         elif stripped.startswith('- ') or stripped.startswith('* '):
-            doc.add_paragraph(stripped.lstrip('-* ').strip(), style='List Bullet')
+            p = doc.add_paragraph(style='List Bullet')
+            stripped = stripped.lstrip('-* ').strip()
         elif stripped.startswith('> '):
-            p = doc.add_paragraph(stripped.lstrip('> ').strip())
+            p = doc.add_paragraph()
             p.style = 'Quote' if 'Quote' in [s.name for s in doc.styles] else 'Normal'
+            stripped = stripped.lstrip('> ').strip()
         else:
-            doc.add_paragraph(stripped)
+            p = doc.add_paragraph()
+
+        # 2. 解析内联加粗格式 **粗体文字**
+        parts = re.split(r'(\*\*.*?\*\*)', stripped)
+        for part in parts:
+            if part.startswith('**') and part.endswith('**') and len(part) > 4:
+                run = p.add_run(part[2:-2])
+                run.bold = True
+            else:
+                p.add_run(part)
 
     bio = io.BytesIO()
     doc.save(bio)
