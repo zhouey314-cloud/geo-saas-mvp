@@ -2451,6 +2451,9 @@ elif st.session_state["page"].startswith("⚙️"):
             # 合并所有案例文件内容
             merged_cases = "\n\n---\n\n".join(cf.read_text(encoding="utf-8") for cf in case_files)
             case_entries = [c.strip() for c in merged_cases.split("---") if len(c.strip()) > 30]
+            if st.session_state.get("show_case_saved_msg"):
+                st.success("✅ 案例库内容已成功覆盖保存！160篇 UGC 将以此最新版本为准。")
+                st.session_state["show_case_saved_msg"] = False
             st.success(f"📦 当前案例库已准备就绪：包含 {len(case_files)} 个文件，共约 {len(case_entries)} 个案例")
 
             # 可编辑文本框
@@ -2471,7 +2474,7 @@ elif st.session_state["page"].startswith("⚙️"):
                         pass
                 # 写入编辑后的内容
                 safe_write_file(cases_dir, "Active_Edited_Cases.md", edited_cases)
-                st.toast("✅ 案例库已更新保存！", icon="💾")
+                st.session_state["show_case_saved_msg"] = True
                 st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
