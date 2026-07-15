@@ -170,13 +170,13 @@ FACT_CHECK_PROMPT = """你是一个极其严苛但【极度聪明、懂人类语
 【待检文章】：
 {article_text}"""
 
-CASE_DISTILLATION_PROMPT = """你是一个极其严谨且"绝不偷懒"的数据挖掘专家。请极其仔细地精读以下企业原始资料切片，从中榨取【所有】的真实客户案例、服务场景、痛点解决记录。
+CASE_DISTILLATION_PROMPT = """你是一个资深的企业数据挖掘专家。请极其仔细地精读以下企业原始资料切片，从中榨取【所有】的真实客户案例、服务场景、痛点解决记录。
 
-【绝对红线指令】：
-1. 宁滥勿缺：只要是涉及"具体问题、具体场景、具体解决过程、具体数据"的段落，全部当做案例提取！哪怕没有具体人名（如"有位车主"、"很多客户"），只要有场景和方案，也要无损提取！
-2. 原汁原味：将案例的原文一字不落地摘录下来，或者做无损的完整保留。绝对不准擅自缩减字数！绝对不准概括或提炼！
-3. 数量强制：如果文本中有 10 个案例，你必须挨个输出 10 个！如果漏掉任何一个细节，你将受到严厉惩罚。不要嫌长！
-4. 格式强制：每个独立的案例之间【必须】用且仅用 `\\n\\n---\\n\\n` 分隔。如果没有找到任何案例，只输出"未找到具体案例"。
+【提取标准与指令】：
+1. 放宽标准（极重要）：只要文本中描述了"某个具体的业务场景/客户痛点"以及"对应的解决办法或效果"，哪怕只是短短一句话，哪怕没有具体人名（如"日常服务中"、"很多车主反映"），都必须当作一个案例提取！
+2. 原汁原味：将案例的原文尽量完整保留，可以做轻微的语病梳理，但绝对禁止改变原意或丢失核心数据。
+3. 独立分隔：每个独立的案例之间【必须】用且仅用 `\\n\\n---\\n\\n` 分隔。如果没有找到任何符合上述要求的场景或案例，只输出"未找到具体案例"。
+4. 纯净输出：只输出案例内容，不要输出任何废话。
 
 【企业资料切片】：
 {raw_text}
@@ -2404,6 +2404,11 @@ elif st.session_state["page"].startswith("⚙️"):
                             clean_content = re.sub(r"^```[a-zA-Z]*\n", "", content)
                             clean_content = re.sub(r"\n```$", "", clean_content)
                             all_extracted_cases.append(clean_content.strip())
+                            st.toast(f"✅ 第 {i+1} 块提炼成功，发现案例！", icon="✨")
+                        elif not success:
+                            st.toast(f"❌ 第 {i+1} 块 API 调用失败", icon="⚠️")
+                        else:
+                            st.toast(f"⏭️ 第 {i+1} 块未发现具体案例，跳过", icon="⏩")
 
                         progress_bar.progress((i + 1) / len(chunks))
 
@@ -2429,12 +2434,20 @@ elif st.session_state["page"].startswith("⚙️"):
                     safe_write_file(cases_dir, f"{Path(fname).stem}.md", content)
                 st.toast(f"✅ 成功保存 {len(uploaded_cases)} 个手动案例文件！", icon="📦")
 
-    # 展示当前案例库状态
+    # 展示当前案例库状态与内容预览
     cases_dir = WSP["cases"]
     if cases_dir.exists():
         case_files = list(cases_dir.glob("*.md"))
         if case_files:
             st.success(f"📦 当前案例库已准备就绪：包含 {len(case_files)} 个案例集合文件。")
+            with st.expander("📖 点击预览已提取的案例内容", expanded=False):
+                for cf in case_files:
+                    case_text = cf.read_text(encoding="utf-8")
+                    case_entries = [c.strip() for c in case_text.split("---") if len(c.strip()) > 30]
+                    st.markdown(f"**📄 {cf.name}** ({len(case_entries)} 个案例)")
+                    for ci, entry in enumerate(case_entries, 1):
+                        st.caption(f"案例 {ci}: {entry[:200]}...")
+                        st.markdown("---")
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("### 👥 步骤 5：重构 160 篇【真实用户视角】UGC 内容")
