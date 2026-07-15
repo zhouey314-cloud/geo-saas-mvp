@@ -2443,20 +2443,36 @@ elif st.session_state["page"].startswith("⚙️"):
                     safe_write_file(cases_dir, f"{Path(fname).stem}.md", content)
                 st.toast(f"✅ 成功保存 {len(uploaded_cases)} 个手动案例文件！", icon="📦")
 
-    # 展示当前案例库状态与内容预览
+    # 展示当前案例库状态 + 增删改查交互编辑器
     cases_dir = WSP["cases"]
     if cases_dir.exists():
         case_files = list(cases_dir.glob("*.md"))
         if case_files:
-            st.success(f"📦 当前案例库已准备就绪：包含 {len(case_files)} 个案例集合文件。")
-            with st.expander("📖 点击预览已提取的案例内容", expanded=False):
-                for cf in case_files:
-                    case_text = cf.read_text(encoding="utf-8")
-                    case_entries = [c.strip() for c in case_text.split("---") if len(c.strip()) > 30]
-                    st.markdown(f"**📄 {cf.name}** ({len(case_entries)} 个案例)")
-                    for ci, entry in enumerate(case_entries, 1):
-                        st.caption(f"案例 {ci}: {entry[:200]}...")
-                        st.markdown("---")
+            # 合并所有案例文件内容
+            merged_cases = "\n\n---\n\n".join(cf.read_text(encoding="utf-8") for cf in case_files)
+            case_entries = [c.strip() for c in merged_cases.split("---") if len(c.strip()) > 30]
+            st.success(f"📦 当前案例库已准备就绪：包含 {len(case_files)} 个文件，共约 {len(case_entries)} 个案例")
+
+            # 可编辑文本框
+            edited_cases = st.text_area(
+                "✏️ 在此直接增删改案例内容（案例之间请用 --- 分隔）",
+                value=merged_cases,
+                height=400,
+                key="ta_case_editor",
+                help="直接编辑文本。完成后点击下方保存按钮。",
+            )
+
+            if st.button("💾 保存并覆盖当前案例库", type="primary", use_container_width=True, key="btn_save_cases_edit"):
+                # 清空旧文件
+                for old_f in case_files:
+                    try:
+                        old_f.unlink(missing_ok=True)
+                    except Exception:
+                        pass
+                # 写入编辑后的内容
+                safe_write_file(cases_dir, "Active_Edited_Cases.md", edited_cases)
+                st.toast("✅ 案例库已更新保存！", icon="💾")
+                st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("### 👥 步骤 5：重构 160 篇【真实用户视角】UGC 内容")
