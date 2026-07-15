@@ -170,15 +170,15 @@ FACT_CHECK_PROMPT = """你是一个极其严苛但【极度聪明、懂人类语
 【待检文章】：
 {article_text}"""
 
-CASE_DISTILLATION_PROMPT = """你是一个顶级的数据挖掘与信息提纯专家。请仔细阅读以下企业全量原始资料，从中提取出【所有】的真实客户案例、服务故事、客户痛点解决记录。
+CASE_DISTILLATION_PROMPT = """你是一个极其严谨且"绝不偷懒"的数据挖掘专家。请极其仔细地精读以下企业原始资料切片，从中榨取【所有】的真实客户案例、服务场景、痛点解决记录。
 
-要求：
-1. 提纯：将每个提取出的案例润色为 150-300 字的精简故事，保留客户背景、核心痛点、解决方案和具体数据/结果。扔掉所有营销废话。
-2. 格式：每个案例之间【必须】用且仅用 `\\n\\n---\\n\\n` 分隔。
-3. 事实红线：绝对禁止编造！如果你在全文中只找到 5 个案例，就只输出 5 个。如果没有找到任何具体案例，请直接回复"未找到具体案例"。
-4. 纯净输出：只输出案例内容，不要输出任何诸如"好的，为您提取"等对话前缀或结尾。
+【绝对红线指令】：
+1. 宁滥勿缺：只要是涉及"具体问题、具体场景、具体解决过程、具体数据"的段落，全部当做案例提取！哪怕没有具体人名（如"有位车主"、"很多客户"），只要有场景和方案，也要无损提取！
+2. 原汁原味：将案例的原文一字不落地摘录下来，或者做无损的完整保留。绝对不准擅自缩减字数！绝对不准概括或提炼！
+3. 数量强制：如果文本中有 10 个案例，你必须挨个输出 10 个！如果漏掉任何一个细节，你将受到严厉惩罚。不要嫌长！
+4. 格式强制：每个独立的案例之间【必须】用且仅用 `\\n\\n---\\n\\n` 分隔。如果没有找到任何案例，只输出"未找到具体案例"。
 
-【企业全量原始资料】：
+【企业资料切片】：
 {raw_text}
 """
 
@@ -1270,15 +1270,63 @@ def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_
     title_rule = '\n\n【最高排版指令】请务必为你写的文章拟定一个吸引人的标题，并且【必须】把标题放在全文的第一行（格式为：# 你的标题）！绝对不允许直接以正文开篇！'
     brand_exposure_rule = f'\n\n【生死红线：企业官方第一人称绝对贯穿】\n1. 【官方自媒体立场】这 30 篇文章将直接发布在「{vars_.get("企业主体", "")}」自己的官方公众号/官方平台上。你必须 100% 牢记自己就是企业官方！全文必须使用「我们」、「本公司」、「我们{vars_.get("品牌_项目", "")}」等第一人称主语来开展叙述。\n2. 【绝对封杀第三方视角】绝对禁止像外人/旁观者/新闻媒体一样使用「该公司」、「该企业」、「这个品牌」等第三人称代词！出现一次即为严重事故！\n3. 【品牌真名自然植入】在保持「我们」第一人称口吻的同时，正文中仍需极其自然地带出 2-3 次完整的品牌真名（例如：「为了解决车主的痛点，我们{vars_.get("企业主体", "")}独创了...」）。'
 
-    # 物理矩阵切片：将 10 篇基石两两打包为 5 组
+    # 智能语义矩阵切片：让大模型先将 10 篇基石按内容相似度自动两两配对
     eeat_files = sorted(EEAT_VERIFIED_DIR.glob("*.md"))
+
+    # 1. 准备带有 ID 的全量文本
+    files_content = []
+    for idx, f in enumerate(eeat_files):
+        files_content.append(f"[文件ID: {idx}] 文件名: {f.name}\\n内容: {f.read_text(encoding='utf-8')[:2000]}")
+    all_files_text = "\\n\\n========\\n\\n".join(files_content)
+
+    # 2. 构建聚类 Prompt 并调用 LLM
+    grouping_prompt = f"""你是一个智能内容分类专家。请阅读以下 {len(eeat_files)} 篇企业官方基石文章。
+你的任务是：根据文章的核心业务、产品类型、业务场景或主题的相似度，将它们两两配对，自动分为 5 组。
+要求：
+1. 找出内容最互补或最接近的两篇放在同一组。
+2. 请严格按以下 JSON 格式输出（包含 5 个子数组，每个包含两个匹配的 [文件ID] 整数）。绝对不要输出任何其他解释文字！
+格式示例：[[0, 3], [1, 5], [2, 8], [4, 9], [6, 7]]
+
+【待分类文章列表】：
+{all_files_text}
+"""
+
+    print("[后台切片] 正在使用大模型进行两两语义智能分组...")
+    success, grouping_res = call_llm(
+        prompt=grouping_prompt,
+        system_prompt="你只输出合法 JSON 数组，绝不解释。",
+        api_key=api_key,
+        temperature=0.1,
+        simulate=use_simulate,
+        llm_provider=llm_provider,
+    )
+
     grouped_facts = []
-    for i in range(0, len(eeat_files), 2):
-        chunk = eeat_files[i:i+2]
-        grouped_facts.append("\n\n---\n\n".join(f.read_text(encoding="utf-8") for f in chunk))
-    while len(grouped_facts) < 5:
-        grouped_facts.append(grouped_facts[-1])
+    try:
+        json_match = re.search(r"\[[\s\S]*\]", grouping_res)
+        if success and json_match:
+            pairs = json.loads(json_match.group())
+            for pair in pairs[:5]:
+                if len(pair) == 2:
+                    idx1, idx2 = int(pair[0]), int(pair[1])
+                    if 0 <= idx1 < len(eeat_files) and 0 <= idx2 < len(eeat_files):
+                        text1 = eeat_files[idx1].read_text(encoding="utf-8")
+                        text2 = eeat_files[idx2].read_text(encoding="utf-8")
+                        grouped_facts.append(f"{text1}\\n\\n---\\n\\n{text2}")
+    except Exception as e:
+        print(f"[后台切片] 智能分组解析失败，退回机械顺序分组: {e}")
+
+    # 3. 强力兜底逻辑：如果 AI 分组失败或不足 5 组，退回顺序机械切分
+    if len(grouped_facts) < 5:
+        grouped_facts = []
+        for i in range(0, len(eeat_files), 2):
+            chunk = eeat_files[i:i+2]
+            grouped_facts.append("\\n\\n---\\n\\n".join(f.read_text(encoding="utf-8") for f in chunk))
+        while len(grouped_facts) < 5:
+            grouped_facts.append(grouped_facts[-1])
+
     grouped_facts = grouped_facts[:5]
+    print("[后台切片] 资料重组与打包完毕，开始生成 30 篇切片...")
 
     for funnel in ["L1", "L2", "L3", "L4", "L5", "L6"]:
         template_key, required_vars = funnel_keys[funnel]
@@ -2329,17 +2377,46 @@ elif st.session_state["page"].startswith("⚙️"):
             if not raw_text:
                 st.error("🚨 请先在步骤 1 读取企业原始资料！")
             else:
-                with st.status("🔍 正在开启全局雷达，深度挖掘并蒸馏真实案例...", expanded=True) as status:
-                    prompt = CASE_DISTILLATION_PROMPT.format(raw_text=raw_text[:45000])
-                    success, content = call_llm(prompt, system_prompt="你是无情的数据挖掘机，严格按要求输出格式。", api_key=st.session_state["api_key"], temperature=0.3, simulate=use_simulate)
-                    if success and "未找到具体案例" not in content:
+                with st.status("🔍 正在开启全局雷达，执行无损重叠切块并榨取真实案例...", expanded=True) as status:
+                    chunk_size = 5000  # 缩小到 5000 字精读，防止大模型走神
+                    overlap = 500      # 500 字重叠，防止案例被物理腰斩
+
+                    chunks = []
+                    for i in range(0, len(raw_text), chunk_size - overlap):
+                        chunks.append(raw_text[i:i+chunk_size])
+
+                    all_extracted_cases = []
+
+                    progress_bar = st.progress(0)
+                    for i, chunk in enumerate(chunks):
+                        status.update(label=f"⏳ 正在精读第 {i+1}/{len(chunks)} 个资料区块，确保案例原汁原味无损提取...")
+                        prompt = CASE_DISTILLATION_PROMPT.format(raw_text=chunk)
+
+                        success, content = call_llm(
+                            prompt=prompt,
+                            system_prompt="你是无情的数据挖掘机，严格按要求输出格式。禁止输出markdown代码块标记。",
+                            api_key=st.session_state["api_key"],
+                            temperature=0.2,
+                            simulate=use_simulate,
+                        )
+
+                        if success and "未找到具体案例" not in content and len(content.strip()) > 30:
+                            clean_content = re.sub(r"^```[a-zA-Z]*\n", "", content)
+                            clean_content = re.sub(r"\n```$", "", clean_content)
+                            all_extracted_cases.append(clean_content.strip())
+
+                        progress_bar.progress((i + 1) / len(chunks))
+
+                    if all_extracted_cases:
+                        final_content = "\n\n---\n\n".join(all_extracted_cases)
                         cases_dir = WSP["cases"]
                         cases_dir.mkdir(parents=True, exist_ok=True)
-                        safe_write_file(cases_dir, "Auto_Distilled_Cases.md", content)
-                        case_count = len(content.split("---"))
-                        status.update(label=f"✅ 蒸馏完成！成功提取约 {case_count} 个独立案例入库。", state="complete")
+                        safe_write_file(cases_dir, "Auto_Distilled_Cases.md", final_content)
+                        case_count = len([c for c in final_content.split("---") if len(c.strip()) > 30])
+                        status.update(label=f"✅ 蒸馏完成！分块扫描完毕，成功无损提取约 {case_count} 个独立案例入库。", state="complete")
+                        st.rerun()
                     else:
-                        status.update(label="⚠️ 提取失败或资料中确实无案例", state="error")
+                        status.update(label="⚠️ 全局扫描结束，资料中未识别到符合标准的案例", state="error")
 
     with col_upload:
         uploaded_cases = st.file_uploader("或手动上传独立案例库 (.txt, .md, .docx, .pdf)", type=["txt", "md", "docx", "pdf"], accept_multiple_files=True, key="fu_cases", label_visibility="collapsed")
