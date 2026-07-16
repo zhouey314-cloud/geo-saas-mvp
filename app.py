@@ -197,7 +197,7 @@ LONG_TEXT_GROUNDING_PROMPT = """【最高事实红线与长文本检索指令】
 # ============================================================
 # LLM 引擎 API 配置（双引擎热切换）
 # ============================================================
-DEFAULT_DEEPSEEK_API_KEY = "sk-ba6e2aac83ab4c90b4c937ff047ad59b"
+DEFAULT_KIMI_API_KEY = "sk-br741eZPVW90JYTQH1fWyUxVEyBLAXjiaJxKOyZTTfObwmGi"
 
 LLM_CONFIGS = {
     "DeepSeek": {
@@ -1172,7 +1172,7 @@ def call_llm(
     temperature: float = 0.6,
     max_tokens: int = 4096,
     simulate: bool = True,
-    llm_provider: str = "DeepSeek",
+    llm_provider: str = "Kimi (Moonshot)",
 ) -> Tuple[bool, str]:
     """
     底层 LLM 调用。prompt 必须是在调用方已完成 .format() 注入的最终字符串。
@@ -1249,7 +1249,7 @@ def call_llm(
 # 后台线程生成函数（不调用任何 st.* UI 组件）
 # ============================================================
 
-def background_generate_slices(vars_, raw_materials, slices_out, use_simulate, api_key, llm_provider="DeepSeek"):
+def background_generate_slices(vars_, raw_materials, slices_out, use_simulate, api_key, llm_provider="Kimi (Moonshot)"):
     """后台线程：裂变 30 篇三级切片（物理矩阵式切片）"""
     funnel_keys = {
         "L1": ("P_L1", ["企业主体"]),
@@ -1361,7 +1361,7 @@ def background_generate_slices(vars_, raw_materials, slices_out, use_simulate, a
             time.sleep(0.3)
         print(f"[后台切片] ✅ {funnel}: 5篇完成")
     print(f"[后台切片] 完成，共 {total}/30 篇")
-def background_generate_bluev(slices_dir, bluev_out, use_simulate, api_key, llm_provider="DeepSeek"):
+def background_generate_bluev(slices_dir, bluev_out, use_simulate, api_key, llm_provider="Kimi (Moonshot)"):
     """后台线程：基于 30 篇企业切片 1:1 生成蓝V口播稿"""
     bluev_out.mkdir(parents=True, exist_ok=True)
     slice_files = sorted(slices_dir.glob("*.md"))
@@ -1413,7 +1413,7 @@ def background_generate_bluev(slices_dir, bluev_out, use_simulate, api_key, llm_
         time.sleep(0.3)
     print(f"[蓝V口播] 完成，共 {total} 篇")
 
-def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek"):
+def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="Kimi (Moonshot)"):
     """后台线程：重构 160 篇四级 UGC（不依赖 st.session_state）"""
     word_ranges = {"L1": "300-500", "L2": "800-1500", "L3": "1500-2500", "L4": "2000-3500", "L5": "1000-2000", "L6": "500-1000"}
     ALL_VARS = {k: vars_.get(k, "") for k in ["企业主体", "行业", "用户画像", "痛点", "概念", "品牌_项目", "品牌_A", "品牌_B", "品牌_C", "五个维度", "优惠信息", "CTA行动"]}
@@ -1552,7 +1552,7 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
     # --- 账本写入（所见即所得，零随机）---
     (PROD_DIR / "tasks_manifest.json").write_text(json.dumps(manifest_records, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"[后台 UGC] 完成，共 {total_ugc} 篇，账本 {len(manifest)} 条")
-def _generate_simulated_content(prompt: str, system_prompt: str, llm_provider: str = "DeepSeek") -> str:
+def _generate_simulated_content(prompt: str, system_prompt: str, llm_provider: str = "Kimi (Moonshot)") -> str:
     """模拟模式：基于 Prompt 中的关键信息生成有结构的占位文章，确保文件写入磁盘后可读。"""
     # 提取 Prompt 中的关键信息
     title_match = re.search(r"\*\*(.+?)\*\*", prompt)
@@ -2093,6 +2093,7 @@ elif st.session_state["page"].startswith("⚙️"):
                     temperature=0.1,
                     max_tokens=1500,
                     simulate=use_simulate,
+                    llm_provider="Kimi (Moonshot)",
                 )
                 if success:
                     # 尝试从结果中提取 JSON
@@ -2261,7 +2262,7 @@ elif st.session_state["page"].startswith("⚙️"):
                 slices_out.mkdir(exist_ok=True)
 
                 st.session_state["is_generating_slices"] = True
-                t = threading.Thread(target=background_generate_slices, args=(vars_, raw_materials, slices_out, use_simulate, st.session_state["api_key"], st.session_state.get("llm_provider", "DeepSeek")))
+                t = threading.Thread(target=background_generate_slices, args=(vars_, raw_materials, slices_out, use_simulate, st.session_state["api_key"], st.session_state.get("llm_provider", "Kimi (Moonshot)")))
                 t.start()
                 add_log("🚀 后台切片线程已启动")
                 st.rerun()
@@ -2326,7 +2327,7 @@ elif st.session_state["page"].startswith("⚙️"):
     elif st.button("🎥 一键生成 30 篇短视频口播稿", type="primary", use_container_width=True, key="btn_bluev"):
         BLUEV_DIR_UI = WSP["bluev"]; BLUEV_DIR_UI.mkdir(parents=True, exist_ok=True)
         st.session_state["is_generating_bluev"] = True
-        t = threading.Thread(target=background_generate_bluev, args=(SLICES_DIR, BLUEV_DIR_UI, use_simulate, st.session_state["api_key"], st.session_state.get("llm_provider", "DeepSeek")))
+        t = threading.Thread(target=background_generate_bluev, args=(SLICES_DIR, BLUEV_DIR_UI, use_simulate, st.session_state["api_key"], st.session_state.get("llm_provider", "Kimi (Moonshot)")))
         t.start()
         add_log("🚀 后台蓝V口播线程已启动")
         st.rerun()
@@ -2384,6 +2385,7 @@ elif st.session_state["page"].startswith("⚙️"):
                             api_key=st.session_state["api_key"],
                             temperature=0.2,
                             simulate=use_simulate,
+                            llm_provider="Kimi (Moonshot)",
                         )
 
                         if success and "未找到具体案例" not in content and len(content.strip()) > 30:
@@ -2480,7 +2482,7 @@ elif st.session_state["page"].startswith("⚙️"):
                     time.sleep(0.5)
             elif st.button("👥 5. 生成 160 篇 UGC", type="primary", use_container_width=True, key="btn_ugc"):
                 st.session_state["is_generating_ugc"] = True
-                t = threading.Thread(target=background_generate_ugc, args=(st.session_state.get("variables", {}), use_simulate, st.session_state["api_key"], st.session_state.get("llm_provider", "DeepSeek")))
+                t = threading.Thread(target=background_generate_ugc, args=(st.session_state.get("variables", {}), use_simulate, st.session_state["api_key"], st.session_state.get("llm_provider", "Kimi (Moonshot)")))
                 t.start()
                 add_log("🚀 后台 UGC 线程已启动")
                 st.rerun()
@@ -2544,6 +2546,7 @@ elif st.session_state["page"].startswith("⚙️"):
                         system_prompt="你是一个严格的企业质检智能体。只输出合法 JSON，不输出任何其他内容。",
                         api_key=st.session_state["api_key"],
                         temperature=0.0, max_tokens=3000, simulate=use_simulate,
+                        llm_provider=st.session_state.get("llm_provider", "Kimi (Moonshot)"),
                     )
                     try:
                         json_match = re.search(r"\{[\s\S]*\}", raw)
