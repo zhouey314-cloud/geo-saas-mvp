@@ -1788,7 +1788,7 @@ with st.sidebar:
     # --- 后台静默配置 API Key 与引擎（隐藏 UI，强制真实生成）---
     selected_llm = "Kimi (Moonshot)"
     st.session_state["llm_provider"] = selected_llm
-    st.session_state["api_key"] = "sk-SByCW0KvwgMRsQvbET758r4zRrCmy5Rf3OYbXcOCfSPB8MWn"
+    st.session_state["api_key"] = "sk-br741eZPVW90JYTQH1fWyUxVEyBLAXjiaJxKOyZTTfObwmGi"
     st.session_state["api_key_configured"] = True
     use_simulate = False  # 永远关闭模拟模式，强制真实调用
 
