@@ -1249,7 +1249,7 @@ def call_llm(
 # 后台线程生成函数（不调用任何 st.* UI 组件）
 # ============================================================
 
-def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_key, llm_provider="DeepSeek"):
+def background_generate_slices(vars_, raw_materials, slices_out, use_simulate, api_key, llm_provider="DeepSeek"):
     """后台线程：裂变 30 篇三级切片（物理矩阵式切片）"""
     funnel_keys = {
         "L1": ("P_L1", ["企业主体"]),
@@ -1333,7 +1333,8 @@ def background_generate_slices(vars_, base_facts, slices_out, use_simulate, api_
                 continue
 
             slice_facts = grouped_facts[j-1]
-            fmt_args = {"base_facts": slice_facts}
+            combined_facts = f"【全局企业原始知识库（用于提取丰富的品牌背景、产品细节和素材）】：\n{raw_materials}\n\n【本篇专属核心基石内容（本文必须紧紧围绕此核心展开）】：\n{slice_facts}"
+            fmt_args = {"base_facts": combined_facts}
             for rv in required_vars:
                 fmt_args[rv] = vars_.get(rv, f"（{rv}待补充）")
             final_prompt = template
@@ -1785,9 +1786,9 @@ with st.sidebar:
     st.caption(f"📂 `workspaces/{workspace_name}/`")
     st.markdown("---")
     # --- 后台静默配置 API Key 与引擎（隐藏 UI，强制真实生成）---
-    selected_llm = "DeepSeek"
+    selected_llm = "Kimi (Moonshot)"
     st.session_state["llm_provider"] = selected_llm
-    st.session_state["api_key"] = DEFAULT_DEEPSEEK_API_KEY
+    st.session_state["api_key"] = "sk-SByCW0KvwgMRsQvbET758r4zRrCmy5Rf3OYbXcOCfSPB8MWn"
     st.session_state["api_key_configured"] = True
     use_simulate = False  # 永远关闭模拟模式，强制真实调用
 
@@ -2255,13 +2256,12 @@ elif st.session_state["page"].startswith("⚙️"):
                     time.sleep(0.5)
             elif st.button("✂️ 4. 裂变 30 篇企业视角切片", type="primary", use_container_width=True, key="btn_slices"):
                 vars_ = st.session_state.get("variables", {})
-                eeat_files = sorted(EEAT_VERIFIED_DIR.glob("*.md"))
-                base_facts = "\n\n---\n\n".join(f.read_text(encoding="utf-8") for f in eeat_files)
+                raw_materials = st.session_state.get("raw_text_combined", "")
                 slices_out = SLICES_DIR
                 slices_out.mkdir(exist_ok=True)
 
                 st.session_state["is_generating_slices"] = True
-                t = threading.Thread(target=background_generate_slices, args=(vars_, base_facts, slices_out, use_simulate, st.session_state["api_key"], st.session_state.get("llm_provider", "DeepSeek")))
+                t = threading.Thread(target=background_generate_slices, args=(vars_, raw_materials, slices_out, use_simulate, st.session_state["api_key"], st.session_state.get("llm_provider", "DeepSeek")))
                 t.start()
                 add_log("🚀 后台切片线程已启动")
                 st.rerun()
