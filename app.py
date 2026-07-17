@@ -313,8 +313,8 @@ def get_workspace_paths(client_name: str) -> dict:
         "eeat_drafts": ws / "EEAT_Base_Drafts",
         "eeat_verified": ws / "EEAT_Base_Verified",
         "slices": ws / "Production_Output" / "Slices_30",
-        "general": ws / "Production_Output" / "UGC_160" / "General_96",
-        "specific": ws / "Production_Output" / "UGC_160" / "Specific_64",
+        "general": ws / "Production_Output" / "UGC_160_定制版",
+        "specific": ws / "Production_Output" / "UGC_160_定制版",
         "bluev": ws / "Production_Output" / "BlueV_Scripts_30",
         "cases": ws / "Cases_Base",
     }
@@ -928,7 +928,9 @@ JSON 格式示例（严格遵循）：
                 safe_write_file(slices_out, fname, content)
                 total += 1
             else:
+                err_msg = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] [切片] {funnel}第{idx_1based}篇失败\n"
                 print(f"[后台切片] ❌ {funnel}第{idx_1based}篇失败")
+                (BASE_DIR / "production_error_log.txt").open("a", encoding="utf-8").write(err_msg)
                 time.sleep(0.5)
             time.sleep(0.3)
         print(f"[后台切片] ✅ {funnel}: 5篇完成")
@@ -982,6 +984,10 @@ def background_generate_bluev(slices_dir, bluev_out, use_simulate, api_key, llm_
             final_content = f"# {orig_title}\n\n{content}"
             safe_write_file(bluev_out, fname, final_content)
             total += 1
+        else:
+            err_msg = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] [蓝V] {fname} 生成失败\n"
+            print(f"[蓝V口播] ❌ {fname} 失败")
+            (BASE_DIR / "production_error_log.txt").open("a", encoding="utf-8").write(err_msg)
         time.sleep(0.3)
     print(f"[蓝V口播] 完成，共 {total} 篇")
 
@@ -1077,7 +1083,9 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
             manifest_records.append({"filename": fname, "funnel": funnel, "persona": persona, "task_id": task_id})
             time.sleep(0.3)
         else:
+            err_msg = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] [UGC] {task_id} 生成失败\n"
             print(f"[后台 UGC] ❌ {task_id} 生成失败")
+            (BASE_DIR / "production_error_log.txt").open("a", encoding="utf-8").write(err_msg)
             time.sleep(0.5)
 
     (PROD_DIR / "tasks_manifest_160_定制版.json").write_text(json.dumps(manifest_records, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -1174,12 +1182,8 @@ def _classify_source(file_path: str) -> tuple:
         return "三级 — 企业切片内容", "三级", "Slices_30"
     if "bluev_scripts_30" in path_lower:
         return "三级附加 — 蓝V口播稿", "口播稿", "BlueV_Scripts_30"
-    if "specific_64" in path_lower:
-        return "四级 — UGC 引擎专属", "四级专属", "Specific_64"
-    if "general_96" in path_lower:
-        return "四级 — UGC 通用内容", "四级通用", "General_96"
-    if "ugc_160" in path_lower:
-        return "四级 — UGC 内容", "四级UGC", "UGC_160"
+    if "ugc_160_定制版" in path_lower or "ugc_160" in path_lower:
+        return "四级 — UGC 定制内容", "四级定制", "UGC_160_定制版"
     return "未知信源", "未知", "unknown"
 
 
@@ -1318,8 +1322,8 @@ with st.sidebar:
     # --- 后台静默配置 API Key 与引擎（隐藏 UI，强制真实生成）---
     selected_llm = "DeepSeek"
     st.session_state["llm_provider"] = selected_llm
-    st.session_state["api_key"] = "sk-5551ca20d47743b8ad5dd48ca3c9b32b"
-    st.session_state["api_key_configured"] = True
+    st.session_state["api_key"] = st.text_input("🔑 配置 DeepSeek API Key", type="password", value=st.session_state.get("api_key", ""))
+    st.session_state["api_key_configured"] = bool(st.session_state["api_key"])
     use_simulate = False  # 永远关闭模拟模式，强制真实调用
 
     st.markdown("---")
