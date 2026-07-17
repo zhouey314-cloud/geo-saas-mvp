@@ -998,10 +998,16 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
     manifest_records = []
 
     try:
-        # 1. 解析 160 篇精准提示词文件
-        prompt_file = BASE_DIR / "ugc_160_prompts.txt"
-        if not prompt_file.exists():
-            print("[后台 UGC] ❌ 找不到 ugc_160_prompts.txt 文件，请确保该文件在项目根目录！")
+        # 1. 解析 160 篇精准提示词文件（兼容多个命名）
+        prompt_file = None
+        for filename in ["ugc_160_prompts.txt", "ugc_160_prompts_2.txt", "ugc_160_prompts_3.txt", "ugc_160_prompts_4.txt"]:
+            temp_file = BASE_DIR / filename
+            if temp_file.exists():
+                prompt_file = temp_file
+                break
+
+        if not prompt_file:
+            print("[后台 UGC] ❌ 找不到任何 ugc_160_prompts 提示词文件！请确保文件在项目根目录。")
             return
 
         try:
@@ -1018,11 +1024,12 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
 
         print(f"[后台 UGC] 成功加载 {len(prompt_matches)} 条精准提示词，启动 DeepSeek 1对1 生产...")
 
-        # 2. 载入 30篇官方事实底座 (限制长度防止 Token 溢出)
-        global_base_facts_ugc = ""
+        # 2. 载入 30 篇切片原始列表（保留在内存，不做静态拼接）
+        all_slices = []
         if SLICES_DIR.exists():
             all_slice_files = sorted(SLICES_DIR.glob("*.md"))
-            global_base_facts_ugc = "\n\n---\n\n".join(f.read_text(encoding="utf-8") for f in all_slice_files)
+            all_slices = [f.read_text(encoding="utf-8") for f in all_slice_files]
+        print(f"[后台 UGC] 切片库就绪: {len(all_slices)} 篇")
 
         # 3. 载入真实案例库
         cases_dir = WSP["cases"] if 'WSP' in dir() else WORKSPACES_ROOT / DEFAULT_WORKSPACE / "Cases_Base"
@@ -1031,8 +1038,9 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
             for f in cases_dir.glob("*.md"):
                 raw_cases = f.read_text(encoding="utf-8")
                 case_pool.extend([c.strip() for c in raw_cases.split("---") if len(c.strip()) > 50])
+        print(f"[后台 UGC] 案例库就绪: {len(case_pool)} 条")
 
-        # 4. 业务上下文强制拼接（弥补原提示词中没有动态占位符的问题）
+        # 4. 业务上下文强制拼接
         biz_context = (
             f"\n\n【专属业务上下文（必须围绕以下品牌信息展开创作）】：\n"
             f"企业主体：{vars_.get('企业主体', '')}\n"
@@ -1046,54 +1054,161 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
         title_rule_ugc = "\n\n【最高排版指令】请务必为你写的文章拟定一个吸引人的长尾标题（需结合具体的痛点和场景），并且【必须】把标题放在全文的第一行（格式为：# 你的标题）！绝对不允许直接以正文开篇！"
         brand_exposure_rule = f"\n\n【📛 机构真名强制露出与加粗红线】\n【必须】在正文的推荐或寻找解决方案环节，明确写出我们的核心机构真名，并且只要提到该名字，【必须使用 Markdown 加粗格式】（例如：**{vars_.get('企业主体', '')}**）！全文提及加粗真名的次数必须严格控制在 1 到 2 次！绝对不允许全篇为 0！"
 
-        # 5. 开始循环打靶
+        # 5. 按漏斗层级分组，L0 分摊到 L1-L6
+        tasks_by_funnel = {f"L{i}": [] for i in range(1, 7)}
+        l0_tasks = []
         for prompt_id, prompt_body in prompt_matches:
-            task_id = f"UGC_{prompt_id}"
             prompt_body = prompt_body.strip()
-            # 用正则从提示词中提取漏斗和画像用于文件命名
             funnel_match = re.search(r"【(L[1-6]).*?】", prompt_body)
             funnel = funnel_match.group(1) if funnel_match else "L0"
             persona_match = re.search(r"【(P[1-7]).*?】", prompt_body)
             persona = persona_match.group(1) if persona_match else "P0"
-
-            fname = f"{task_id}_{funnel}_{persona}.md"
-            if (ugc_out / fname).exists():
-                print(f"[后台 UGC] ⏩ {fname} 已存在，跳过...")
-                total_ugc += 1
-                continue
-
-            # 盲抽案例注入
-            case_injection = ""
-            if case_pool:
-                selected_case = random.choice(case_pool)
-                case_injection = f"\n\n【本篇专属背景案例】\n你必须将以下真实案例作为你本次写作的核心故事背景，并极其自然地融入到你的角色叙述中：\n{selected_case}"
-
-            # 拼装终极 Prompt
-            final_prompt = prompt_body + biz_context + f"\n\n【事实依据与底层素材（绝不可脱离此素材乱编）】：\n{global_base_facts_ugc[:8000]}" + case_injection + title_rule_ugc + brand_exposure_rule
-
-            success, content = call_llm(
-                prompt=final_prompt,
-                system_prompt=UGC_SYSTEM_PROMPT,
-                api_key=api_key,
-                temperature=0.35,
-                max_tokens=3500,
-                simulate=use_simulate,
-                llm_provider="DeepSeek",
-            )
-
-            if success:
-                safe_write_file(ugc_out, fname, content)
-                total_ugc += 1
-                manifest_records.append({"filename": fname, "funnel": funnel, "persona": persona, "task_id": task_id})
-                time.sleep(0.3)
+            if funnel == "L0":
+                l0_tasks.append((prompt_id, prompt_body, funnel, persona))
             else:
-                err_msg = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] [UGC] {task_id} 生成失败\n"
-                print(f"[后台 UGC] ❌ {task_id} 生成失败")
-                (BASE_DIR / "production_error_log.txt").open("a", encoding="utf-8").write(err_msg)
-                time.sleep(0.5)
+                tasks_by_funnel[funnel].append((prompt_id, prompt_body, funnel, persona))
+
+        # L0 均匀分摊到 L1-L6
+        if l0_tasks:
+            for i, t in enumerate(l0_tasks):
+                target = f"L{(i % 6) + 1}"
+                pid, pbody, _, ppersona = t
+                tasks_by_funnel[target].append((pid, pbody, target, ppersona))
+            print(f"[后台 UGC] L0 分摊: {len(l0_tasks)} 个任务已均匀分配至 L1-L6")
+
+        # 6. 案例库洗牌 + 切片轮转准备
+        random.shuffle(case_pool)
+        total_slices = len(all_slices)
+
+        # 结构库、开场库、人设库（扩容 + 确定性轮转发放）
+        narrative_structures = [
+            "知乎树洞日记体", "干货清单倒叙", "纯对话记录体",
+            "暴躁吐槽夹杂干货", "极简大白话随笔", "一步步的排坑记录",
+            "深夜 emo 朋友圈体", "硬核测评清单体", "避坑指南红黑榜",
+            "闺蜜聊天记录体", "伪新闻快讯体", "段子手冷笑话体"
+        ]
+        openings = [
+            "以一句反直觉的暴论开场", "以一个刚发生的极度懊恼的场景开场",
+            "直接抛出账单或数据开场", "用极度疲惫的口吻开场",
+            "用刚刚劝退朋友的对话开场", "以一个灵魂反问句开场",
+            "以一个让人立刻代入的社死场景开场", "用一句网上流传的虚假谣言开场并立刻辟谣",
+            "以'说个真事'开头营造窥私欲", "用'没人敢说的大实话'开场"
+        ]
+        emotion_personas = [
+            "精打细算的理性派", "踩坑无数的过来人", "技术考据党",
+            "严重社恐患者", "暴躁打工人", "佛系摆烂选手",
+            "强迫症细节控", "正义感爆棚的较真党", "深夜焦虑失眠者",
+            "刚刚被坑完的受害者", "阅尽千帆的老司机", "实用主义极简者",
+            "好奇心爆棚的小白", "悲观主义风险规避者", "乐观行动派体验者"
+        ]
+
+        # 标题登记避让系统
+        used_titles_and_themes = []
+        task_index = 0  # 全局计数器，驱动确定性切片轮转
+
+        # 7. 六阶段独立工作流 (L1 → L6)
+        for funnel in ["L1", "L2", "L3", "L4", "L5", "L6"]:
+            funnel_tasks = tasks_by_funnel.get(funnel, [])
+            if not funnel_tasks:
+                continue
+            print(f"[后台 UGC] === {funnel} 阶段: {len(funnel_tasks)} 个任务 ===")
+
+            for prompt_id, prompt_body, funnel_tag, persona_tag in funnel_tasks:
+                task_id = f"UGC_{prompt_id}"
+                task_index += 1
+
+                fname = f"{task_id}_{funnel_tag}_{persona_tag}.md"
+                if (ugc_out / fname).exists():
+                    print(f"[后台 UGC] ⏩ {fname} 已存在，跳过...")
+                    total_ugc += 1
+                    manifest_records.append({"filename": fname, "funnel": funnel_tag, "persona": persona_tag, "task_id": task_id})
+                    if case_pool:
+                        case_pool.pop()  # 保持案例游标对齐，消耗掉已用案例
+                    continue
+
+                # --- 确定性切片轮转（核心主素材 + 错位辅素材）---
+                core_idx = 0
+                aux_idx = 0
+                if all_slices:
+                    core_idx = task_index % total_slices
+                    aux_idx = (core_idx + 7) % total_slices
+                    local_facts = all_slices[core_idx] + "\n\n---\n\n" + all_slices[aux_idx]
+                else:
+                    local_facts = ""
+
+                # --- 案例库洗牌发牌（pop 弹尽则给指令）---
+                local_case = ""
+                if case_pool:
+                    popped_case = case_pool.pop()
+                    local_case = "\n\n【发牌案例（使用后即弃，确保不重复）】：\n" + popped_case
+                else:
+                    local_case = "\n\n【无案例自由叙述】本文禁止复述任何具体的人物故事，请用纯逻辑或自身主观感受展开。"
+
+                # --- 确定性轮转：结构 + 开场 + 人设（module 取余，绝不随机）---
+                chosen_structure = narrative_structures[task_index % len(narrative_structures)]
+                chosen_opening = openings[task_index % len(openings)]
+                chosen_persona = emotion_personas[task_index % len(emotion_personas)]
+                ANTI_HOMOGENIZATION = (
+                    f"\n\n【🔥 防结构同质化指令】本次强制采用「{chosen_structure}」，绝对禁止使用'背景-问题-解决方案-总结'的刻板三段论！"
+                    f"开场方式：{chosen_opening}。"
+                    "不要写成像官方公关稿那样四平八稳，要像真人博客或社媒碎碎念！"
+                )
+                EMOTION_AMPLIFIER = (
+                    f"\n\n【🔥 情绪与主题特异化】你本次的核心人设是：「{chosen_persona}」。"
+                    "请彻底沉浸在这个人格中，把该人格的情绪放大 10 倍！"
+                    "你可以语无伦次，可以偏激，绝对不要四平八稳。"
+                    "必须结合当前轮转到的切片事实，只谈一个极度微观的痛点，切忌面面俱到！"
+                )
+
+                # --- 标题避让指令 ---
+                avoidance_instruction = ""
+                if used_titles_and_themes:
+                    recent = used_titles_and_themes[-40:]
+                    avoidance_instruction = f"\n\n【🚫 强制避让指令】以下是之前已生成的文章核心主题（最近{len(recent)}篇），你本次生成的文章切入点和标题【绝对禁止】与它们雷同或换皮复述：\n" + "\n".join(f"- {t}" for t in recent)
+
+                # --- 拼装终极 Prompt ---
+                final_prompt = (
+                    prompt_body
+                    + biz_context
+                    + f"\n\n【本文轮转基石素材（核心切片#{core_idx+1} + 辅切片#{aux_idx+1}，禁止跨界引用其他切片！）】：\n{local_facts[:6000]}"
+                    + local_case
+                    + title_rule_ugc
+                    + brand_exposure_rule
+                    + ANTI_HOMOGENIZATION
+                    + EMOTION_AMPLIFIER
+                    + avoidance_instruction
+                    + "\n\n【最高事实红线】即使你的语气再夸张、情绪再激烈，文章中涉及到的客观数据、价格、功能参数，必须 100% 来源于提供的轮转基石素材。绝对禁止脱离素材凭空捏造任何系统功能或服务承诺！"
+                )
+
+                success, content = call_llm(
+                    prompt=final_prompt,
+                    system_prompt=UGC_SYSTEM_PROMPT,
+                    api_key=api_key,
+                    temperature=round(random.uniform(0.75, 0.85), 2),
+                    max_tokens=3500,
+                    simulate=use_simulate,
+                    llm_provider="DeepSeek",
+                )
+
+                if success:
+                    safe_write_file(ugc_out, fname, content)
+                    total_ugc += 1
+                    manifest_records.append({"filename": fname, "funnel": funnel_tag, "persona": persona_tag, "task_id": task_id})
+                    # 提取标题登记避让
+                    lines = content.strip().split("\n")
+                    title_line = lines[0].lstrip("# ").strip() if lines else task_id
+                    used_titles_and_themes.append(title_line[:80])
+                    time.sleep(0.3)
+                else:
+                    err_msg = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] [UGC] {task_id} 生成失败\n"
+                    print(f"[后台 UGC] ❌ {task_id} 生成失败")
+                    (BASE_DIR / "production_error_log.txt").open("a", encoding="utf-8").write(err_msg)
+                    time.sleep(0.5)
+
+            print(f"[后台 UGC] ✅ {funnel} 阶段完成")
 
         (PROD_DIR / "tasks_manifest_160_定制版.json").write_text(json.dumps(manifest_records, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"[后台 UGC] 完成，共生成 {total_ugc} 篇")
+        print(f"[后台 UGC] 🎉 六阶段工作流完成，共生成 {total_ugc} 篇")
 
     except Exception as e:
         import traceback
@@ -1333,8 +1448,8 @@ with st.sidebar:
     # --- 后台静默配置 API Key 与引擎（隐藏 UI，强制真实生成）---
     selected_llm = "DeepSeek"
     st.session_state["llm_provider"] = selected_llm
-    st.session_state["api_key"] = st.text_input("🔑 配置 DeepSeek API Key", type="password", value=st.session_state.get("api_key", ""))
-    st.session_state["api_key_configured"] = bool(st.session_state["api_key"])
+    st.session_state["api_key"] = DEEPSEEK_API_KEY
+    st.session_state["api_key_configured"] = True
     use_simulate = False  # 永远关闭模拟模式，强制真实调用
 
     st.markdown("---")
