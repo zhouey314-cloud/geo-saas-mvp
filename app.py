@@ -63,6 +63,7 @@ CORP_PROMPT_TEMPLATES = {
 4. 结尾必须以互动问句收尾，引导评论。
 5. 全文用第二人称"你"建立代入感。
 6. 风格要求：短句为主，每句不超过20字；段落不超过3段。
+7. 平台网感与话题标签：因为本文将发布在官方蓝V和小红书平台，请在文章的最后一行，根据本文的痛点主题，提炼并强制输出 3-5 个高流量的社交媒体话题标签（格式严格为：#标签1 #标签2 #标签3）。
 \n\n【高阶防同质化与SEO指令】必须拟定一个极具搜索价值的长尾标题（含场景、痛点），作为全文第一行（# 标题）。确保每篇文章结构独一无二。
 \n\n【事实防伪与零幻觉指令】你的所有内容素材必须 100% 取自以下参考内容。绝对禁止引入外部数据、禁止凭空捏造！\n\n事实提取来源：{base_facts}""",
 
@@ -1378,7 +1379,7 @@ JSON 格式示例（严格遵循）：
         success, raw_output = call_llm(
             prompt=topic_extraction_prompt,
             system_prompt="你是专业的内容策略专家。你只输出合法的 JSON 数组，绝不输出任何解释文字或 Markdown 标记。",
-            api_key=api_key,
+            api_key=DEFAULT_KIMI_API_KEY,
             temperature=0.3,
             max_tokens=2500,
             simulate=use_simulate,
@@ -1537,7 +1538,7 @@ JSON 格式示例（严格遵循）：
             time.sleep(0.3)
         print(f"[后台切片] ✅ {funnel}: 5篇完成")
     print(f"[后台切片] 🎉 三阶段流水线完成，共 {total}/30 篇")
-def background_generate_bluev(slices_dir, bluev_out, use_simulate, api_key, llm_provider="Kimi (Moonshot)"):
+def background_generate_bluev(slices_dir, bluev_out, use_simulate, api_key, llm_provider="DeepSeek"):
     """后台线程：基于 30 篇企业切片 1:1 生成蓝V口播稿"""
     bluev_out.mkdir(parents=True, exist_ok=True)
     slice_files = sorted(slices_dir.glob("*.md"))
@@ -1589,7 +1590,7 @@ def background_generate_bluev(slices_dir, bluev_out, use_simulate, api_key, llm_
         time.sleep(0.3)
     print(f"[蓝V口播] 完成，共 {total} 篇")
 
-def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="Kimi (Moonshot)"):
+def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek"):
     """后台线程：重构 160 篇四级 UGC（不依赖 st.session_state）"""
     word_ranges = {"L1": "300-500", "L2": "800-1500", "L3": "1500-2500", "L4": "2000-3500", "L5": "1000-2000", "L6": "500-1000"}
     ALL_VARS = {k: vars_.get(k, "") for k in ["企业主体", "行业", "用户画像", "痛点", "概念", "品牌_项目", "品牌_A", "品牌_B", "品牌_C", "五个维度", "优惠信息", "CTA行动"]}
@@ -1989,9 +1990,9 @@ with st.sidebar:
     st.caption(f"📂 `workspaces/{workspace_name}/`")
     st.markdown("---")
     # --- 后台静默配置 API Key 与引擎（隐藏 UI，强制真实生成）---
-    selected_llm = "Kimi (Moonshot)"
+    selected_llm = "DeepSeek"
     st.session_state["llm_provider"] = selected_llm
-    st.session_state["api_key"] = "sk-br741eZPVW90JYTQH1fWyUxVEyBLAXjiaJxKOyZTTfObwmGi"
+    st.session_state["api_key"] = "sk-5551ca20d47743b8ad5dd48ca3c9b32b"
     st.session_state["api_key_configured"] = True
     use_simulate = False  # 永远关闭模拟模式，强制真实调用
 
@@ -2292,7 +2293,7 @@ elif st.session_state["page"].startswith("⚙️"):
                 success, result = call_llm(
                     prompt=extract_prompt,
                     system_prompt="你是 GEO 变量提取专家。你只输出合法的 JSON，不输出任何其他内容。",
-                    api_key=st.session_state["api_key"],
+                    api_key=DEFAULT_KIMI_API_KEY,
                     temperature=0.1,
                     max_tokens=1500,
                     simulate=use_simulate,
@@ -2530,7 +2531,7 @@ elif st.session_state["page"].startswith("⚙️"):
     elif st.button("🎥 一键生成 30 篇短视频口播稿", type="primary", use_container_width=True, key="btn_bluev"):
         BLUEV_DIR_UI = WSP["bluev"]; BLUEV_DIR_UI.mkdir(parents=True, exist_ok=True)
         st.session_state["is_generating_bluev"] = True
-        t = threading.Thread(target=background_generate_bluev, args=(SLICES_DIR, BLUEV_DIR_UI, use_simulate, st.session_state["api_key"], st.session_state.get("llm_provider", "Kimi (Moonshot)")))
+        t = threading.Thread(target=background_generate_bluev, args=(SLICES_DIR, BLUEV_DIR_UI, use_simulate, DEEPSEEK_API_KEY, "DeepSeek"))
         t.start()
         add_log("🚀 后台蓝V口播线程已启动")
         st.rerun()
@@ -2585,7 +2586,7 @@ elif st.session_state["page"].startswith("⚙️"):
                         success, content = call_llm(
                             prompt=prompt,
                             system_prompt="你是无情的数据挖掘机，严格按要求输出格式。禁止输出markdown代码块标记。",
-                            api_key=st.session_state["api_key"],
+                            api_key=DEFAULT_KIMI_API_KEY,
                             temperature=0.2,
                             simulate=use_simulate,
                             llm_provider="Kimi (Moonshot)",
