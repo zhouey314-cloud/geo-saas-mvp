@@ -997,99 +997,110 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
     total_ugc = 0
     manifest_records = []
 
-    # 1. 解析 160 篇精准提示词文件
-    prompt_file = BASE_DIR / "ugc_160_prompts.txt"
-    if not prompt_file.exists():
-        print("[后台 UGC] ❌ 找不到 ugc_160_prompts.txt 文件，请确保该文件在项目根目录！")
-        return
+    try:
+        # 1. 解析 160 篇精准提示词文件
+        prompt_file = BASE_DIR / "ugc_160_prompts.txt"
+        if not prompt_file.exists():
+            print("[后台 UGC] ❌ 找不到 ugc_160_prompts.txt 文件，请确保该文件在项目根目录！")
+            return
 
-    raw_prompts_text = prompt_file.read_text(encoding="utf-8")
+        try:
+            raw_prompts_text = prompt_file.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            raw_prompts_text = prompt_file.read_text(encoding="gbk", errors="ignore")
 
-    # 极其健壮的正则：兼容 "Prompt 001:" 以及 "17. Prompt 017:" 格式，并过滤掉分类标题
-    prompt_matches = re.findall(r"Prompt (\d{3}):\s*(.*?)(?=\n*(?:\d{1,3}\.\s*)?Prompt \d{3}:|\Z)", raw_prompts_text, re.DOTALL)
+        # 极其健壮的正则：兼容 "Prompt 001:" 以及 "17. Prompt 017:" 格式，并过滤掉分类标题
+        prompt_matches = re.findall(r"(?i)Prompt\s*(\d{1,3})\s*[:：]\s*(.*?)(?=\n\s*Prompt\s*\d{1,3}\s*[:：]|\Z)", raw_prompts_text, re.DOTALL)
 
-    if not prompt_matches:
-        print("[后台 UGC] ❌ ugc_160_prompts.txt 解析失败，未匹配到任何 'Prompt XXX:' 结构！")
-        return
+        if not prompt_matches:
+            print("[后台 UGC] ❌ ugc_160_prompts.txt 解析失败，未匹配到任何 'Prompt XXX:' 结构！")
+            return
 
-    print(f"[后台 UGC] 成功加载 {len(prompt_matches)} 条精准提示词，启动 DeepSeek 1对1 生产...")
+        print(f"[后台 UGC] 成功加载 {len(prompt_matches)} 条精准提示词，启动 DeepSeek 1对1 生产...")
 
-    # 2. 载入 30篇官方事实底座 (限制长度防止 Token 溢出)
-    global_base_facts_ugc = ""
-    if SLICES_DIR.exists():
-        all_slice_files = sorted(SLICES_DIR.glob("*.md"))
-        global_base_facts_ugc = "\n\n---\n\n".join(f.read_text(encoding="utf-8") for f in all_slice_files)
+        # 2. 载入 30篇官方事实底座 (限制长度防止 Token 溢出)
+        global_base_facts_ugc = ""
+        if SLICES_DIR.exists():
+            all_slice_files = sorted(SLICES_DIR.glob("*.md"))
+            global_base_facts_ugc = "\n\n---\n\n".join(f.read_text(encoding="utf-8") for f in all_slice_files)
 
-    # 3. 载入真实案例库
-    cases_dir = WSP["cases"] if 'WSP' in dir() else WORKSPACES_ROOT / DEFAULT_WORKSPACE / "Cases_Base"
-    case_pool = []
-    if cases_dir.exists():
-        for f in cases_dir.glob("*.md"):
-            raw_cases = f.read_text(encoding="utf-8")
-            case_pool.extend([c.strip() for c in raw_cases.split("---") if len(c.strip()) > 50])
+        # 3. 载入真实案例库
+        cases_dir = WSP["cases"] if 'WSP' in dir() else WORKSPACES_ROOT / DEFAULT_WORKSPACE / "Cases_Base"
+        case_pool = []
+        if cases_dir.exists():
+            for f in cases_dir.glob("*.md"):
+                raw_cases = f.read_text(encoding="utf-8")
+                case_pool.extend([c.strip() for c in raw_cases.split("---") if len(c.strip()) > 50])
 
-    # 4. 业务上下文强制拼接（弥补原提示词中没有动态占位符的问题）
-    biz_context = (
-        f"\n\n【专属业务上下文（必须围绕以下品牌信息展开创作）】：\n"
-        f"企业主体：{vars_.get('企业主体', '')}\n"
-        f"所属行业：{vars_.get('行业', '')}\n"
-        f"核心产品/项目：{vars_.get('品牌_项目', '')}\n"
-        f"品牌A(对标)：{vars_.get('品牌_A', '')}\n"
-        f"品牌B(对标)：{vars_.get('品牌_B', '')}\n"
-        f"优惠与行动：{vars_.get('优惠信息', '')}，{vars_.get('CTA行动', '')}\n"
-    )
-
-    title_rule_ugc = "\n\n【最高排版指令】请务必为你写的文章拟定一个吸引人的长尾标题（需结合具体的痛点和场景），并且【必须】把标题放在全文的第一行（格式为：# 你的标题）！绝对不允许直接以正文开篇！"
-    brand_exposure_rule = f"\n\n【📛 机构真名强制露出与加粗红线】\n【必须】在正文的推荐或寻找解决方案环节，明确写出我们的核心机构真名，并且只要提到该名字，【必须使用 Markdown 加粗格式】（例如：**{vars_.get('企业主体', '')}**）！全文提及加粗真名的次数必须严格控制在 1 到 2 次！绝对不允许全篇为 0！"
-
-    # 5. 开始循环打靶
-    for prompt_id, prompt_body in prompt_matches:
-        task_id = f"UGC_{prompt_id}"
-        prompt_body = prompt_body.strip()
-        # 用正则从提示词中提取漏斗和画像用于文件命名
-        funnel_match = re.search(r"【(L[1-6]).*?】", prompt_body)
-        funnel = funnel_match.group(1) if funnel_match else "L0"
-        persona_match = re.search(r"【(P[1-7]).*?】", prompt_body)
-        persona = persona_match.group(1) if persona_match else "P0"
-
-        fname = f"{task_id}_{funnel}_{persona}.md"
-        if (ugc_out / fname).exists():
-            print(f"[后台 UGC] ⏩ {fname} 已存在，跳过...")
-            total_ugc += 1
-            continue
-
-        # 盲抽案例注入
-        case_injection = ""
-        if case_pool:
-            selected_case = random.choice(case_pool)
-            case_injection = f"\n\n【本篇专属背景案例】\n你必须将以下真实案例作为你本次写作的核心故事背景，并极其自然地融入到你的角色叙述中：\n{selected_case}"
-
-        # 拼装终极 Prompt
-        final_prompt = prompt_body + biz_context + f"\n\n【事实依据与底层素材（绝不可脱离此素材乱编）】：\n{global_base_facts_ugc[:8000]}" + case_injection + title_rule_ugc + brand_exposure_rule
-
-        success, content = call_llm(
-            prompt=final_prompt,
-            system_prompt=UGC_SYSTEM_PROMPT,
-            api_key=api_key,
-            temperature=0.35,
-            max_tokens=3500,
-            simulate=use_simulate,
-            llm_provider="DeepSeek",
+        # 4. 业务上下文强制拼接（弥补原提示词中没有动态占位符的问题）
+        biz_context = (
+            f"\n\n【专属业务上下文（必须围绕以下品牌信息展开创作）】：\n"
+            f"企业主体：{vars_.get('企业主体', '')}\n"
+            f"所属行业：{vars_.get('行业', '')}\n"
+            f"核心产品/项目：{vars_.get('品牌_项目', '')}\n"
+            f"品牌A(对标)：{vars_.get('品牌_A', '')}\n"
+            f"品牌B(对标)：{vars_.get('品牌_B', '')}\n"
+            f"优惠与行动：{vars_.get('优惠信息', '')}，{vars_.get('CTA行动', '')}\n"
         )
 
-        if success:
-            safe_write_file(ugc_out, fname, content)
-            total_ugc += 1
-            manifest_records.append({"filename": fname, "funnel": funnel, "persona": persona, "task_id": task_id})
-            time.sleep(0.3)
-        else:
-            err_msg = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] [UGC] {task_id} 生成失败\n"
-            print(f"[后台 UGC] ❌ {task_id} 生成失败")
-            (BASE_DIR / "production_error_log.txt").open("a", encoding="utf-8").write(err_msg)
-            time.sleep(0.5)
+        title_rule_ugc = "\n\n【最高排版指令】请务必为你写的文章拟定一个吸引人的长尾标题（需结合具体的痛点和场景），并且【必须】把标题放在全文的第一行（格式为：# 你的标题）！绝对不允许直接以正文开篇！"
+        brand_exposure_rule = f"\n\n【📛 机构真名强制露出与加粗红线】\n【必须】在正文的推荐或寻找解决方案环节，明确写出我们的核心机构真名，并且只要提到该名字，【必须使用 Markdown 加粗格式】（例如：**{vars_.get('企业主体', '')}**）！全文提及加粗真名的次数必须严格控制在 1 到 2 次！绝对不允许全篇为 0！"
 
-    (PROD_DIR / "tasks_manifest_160_定制版.json").write_text(json.dumps(manifest_records, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"[后台 UGC] 完成，共生成 {total_ugc} 篇")
+        # 5. 开始循环打靶
+        for prompt_id, prompt_body in prompt_matches:
+            task_id = f"UGC_{prompt_id}"
+            prompt_body = prompt_body.strip()
+            # 用正则从提示词中提取漏斗和画像用于文件命名
+            funnel_match = re.search(r"【(L[1-6]).*?】", prompt_body)
+            funnel = funnel_match.group(1) if funnel_match else "L0"
+            persona_match = re.search(r"【(P[1-7]).*?】", prompt_body)
+            persona = persona_match.group(1) if persona_match else "P0"
+
+            fname = f"{task_id}_{funnel}_{persona}.md"
+            if (ugc_out / fname).exists():
+                print(f"[后台 UGC] ⏩ {fname} 已存在，跳过...")
+                total_ugc += 1
+                continue
+
+            # 盲抽案例注入
+            case_injection = ""
+            if case_pool:
+                selected_case = random.choice(case_pool)
+                case_injection = f"\n\n【本篇专属背景案例】\n你必须将以下真实案例作为你本次写作的核心故事背景，并极其自然地融入到你的角色叙述中：\n{selected_case}"
+
+            # 拼装终极 Prompt
+            final_prompt = prompt_body + biz_context + f"\n\n【事实依据与底层素材（绝不可脱离此素材乱编）】：\n{global_base_facts_ugc[:8000]}" + case_injection + title_rule_ugc + brand_exposure_rule
+
+            success, content = call_llm(
+                prompt=final_prompt,
+                system_prompt=UGC_SYSTEM_PROMPT,
+                api_key=api_key,
+                temperature=0.35,
+                max_tokens=3500,
+                simulate=use_simulate,
+                llm_provider="DeepSeek",
+            )
+
+            if success:
+                safe_write_file(ugc_out, fname, content)
+                total_ugc += 1
+                manifest_records.append({"filename": fname, "funnel": funnel, "persona": persona, "task_id": task_id})
+                time.sleep(0.3)
+            else:
+                err_msg = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] [UGC] {task_id} 生成失败\n"
+                print(f"[后台 UGC] ❌ {task_id} 生成失败")
+                (BASE_DIR / "production_error_log.txt").open("a", encoding="utf-8").write(err_msg)
+                time.sleep(0.5)
+
+        (PROD_DIR / "tasks_manifest_160_定制版.json").write_text(json.dumps(manifest_records, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"[后台 UGC] 完成，共生成 {total_ugc} 篇")
+
+    except Exception as e:
+        import traceback
+        err_detail = traceback.format_exc()
+        err_msg = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] [UGC 致命崩溃]\n{err_detail}\n"
+        print(f"[后台 UGC] 🔥 致命错误，完整堆栈：\n{err_detail}")
+        (BASE_DIR / "production_error_log.txt").open("a", encoding="utf-8").write(err_msg)
 def _generate_simulated_content(prompt: str, system_prompt: str, llm_provider: str = "Kimi (Moonshot)") -> str:
     """模拟模式：基于 Prompt 中的关键信息生成有结构的占位文章，确保文件写入磁盘后可读。"""
     # 提取 Prompt 中的关键信息
@@ -2022,7 +2033,7 @@ elif st.session_state["page"].startswith("⚙️"):
                 st.rerun()
     # --- 实时进度可视化 (UGC) ---
     if GENERAL_DIR.exists() or SPECIFIC_DIR.exists():
-        gen_ugc_files = sorted([f.name for f in GENERAL_DIR.glob("*.md")] + [f.name for f in SPECIFIC_DIR.rglob("*.md")])
+        gen_ugc_files = sorted(list(set([f.name for f in GENERAL_DIR.glob("*.md")] + [f.name for f in SPECIFIC_DIR.rglob("*.md")])))
         if gen_ugc_files:
             with st.expander(f"📂 UGC 生成进度：已产出 {len(gen_ugc_files)} / 160 篇 (点击展开)", expanded=False):
                 if st.button("🔄 手动刷新进度", key="refresh_ugc"):
