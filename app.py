@@ -324,28 +324,23 @@ def get_workspace_paths(client_name: str) -> dict:
 
 
 # ============================================================
-# UGC 4D 交叉引擎 v2.0（画像 × 体裁 × 漏斗 × 引擎）
+# UGC 4D 交叉引擎 v2.0（画像 × 体裁 × 漏斗 × 引擎）# ============================================================
+# 反同质化动态引擎 (Variance Engine) — 供切片 Phase 3 使用
 # ============================================================
+VARIANCE_EMOTIONS = ["客观中立", "严谨科普", "理性算账", "行业深度解析", "第三方视角评估"]
+VARIANCE_STRUCTURES = ["安全隐患→科学原理→规范流程", "常见误区→规则拆解→背后逻辑", "消费痛点→价值拆解→决策模型", "问题引入→专业分析→客观建议", "背景陈述→多维对比→综合结论"]
 
-# 七大用户画像 (Persona, P1-P7)
-PERSONAS = {
-    "P1": "焦虑探索者（模糊感知、情绪驱动）",
-    "P2": "小白求知者（信息饥渴、概念导向）",
-    "P3": "性价比猎人（预算敏感、价值导向）",
-    "P4": "纠结对比者（选择困难、框架导向）",
-    "P5": "口碑验证者（风险规避、信任导向）",
-    "P6": "行动主义者（目标明确、行动导向）",
-    "P7": "深度研究者（技术驱动、逻辑导向）",
-}
-
-# 五大内容体裁 (Genre, G1-G5)
-GENRES = {
-    "G1": "场景共鸣体（300-600字，主打痛点和情绪共鸣）",
-    "G2": "知识科普体（800-1500字，FAQ与避坑指南）",
-    "G3": "决策对比体（1500-3000字，多维对比分析与性价比）",
-    "G4": "口碑证言体（800-2000字，展示极高满意度的长期正向体验分享）",
-    "G5": "行动攻略体（500-1000字，准备清单与购买时机）",
-}
+def build_variance_instruction() -> str:
+    """随机抽取情绪+结构，生成防重复指令"""
+    emotion = random.choice(VARIANCE_EMOTIONS)
+    structure = random.choice(VARIANCE_STRUCTURES)
+    return (
+        f"\n【强制防重指令】本次生成，你必须采用『{emotion}』语气。"
+        f"严禁使用『首先、其次、总之』等常规 AI 结构词！"
+        f"建议采用『{structure}』的叙事结构。"
+        f"使用全新的独特排版和句式结构，"
+        f"确保本篇文章在浩如烟海的互联网中具有绝对的独特性。"
+    )
 
 SUPPORTED_SUFFIXES = {".txt", ".md", ".markdown", ".docx", ".pdf"}
 
@@ -881,7 +876,7 @@ JSON 格式示例（严格遵循）：
                 "6. 全局数据去重与隔离红线：为了保证生成的30篇文章数据互不重复，本篇文章中引用的具体数值、百分比、客户人名、特有案例等硬核数据，【必须且只能】来源于上方的『本文专属核心支撑素材』！绝对禁止跨界调用『全局企业原始知识库』中的具体数据！\n"
                 + dynamic_rule_7
             )
-            current_prompt = final_prompt + f"\n\n请直接输出第 {idx_1based} 篇 {funnel} 层级切片内容。" + slice_dynamic_rule + brand_exposure_rule
+            current_prompt = final_prompt + f"\n\n请直接输出第 {idx_1based} 篇 {funnel} 层级切片内容。" + slice_dynamic_rule + brand_exposure_rule + build_variance_instruction()
 
             success, content = call_llm(
                 prompt=current_prompt,
@@ -960,17 +955,18 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
     manifest_records = []
 
     # 1. 解析 160 篇精准提示词文件
-    prompt_file = BASE_DIR / "提示词全集.md"
+    prompt_file = BASE_DIR / "ugc_160_prompts.txt"
     if not prompt_file.exists():
-        print("[后台 UGC] ❌ 找不到 提示词全集.md 文件，请确保该文件在项目根目录！")
+        print("[后台 UGC] ❌ 找不到 ugc_160_prompts.txt 文件，请确保该文件在项目根目录！")
         return
 
     raw_prompts_text = prompt_file.read_text(encoding="utf-8")
-    # 正则提取所有的 Prompt 正文（匹配 **Prompt 001** 后面的内容）
-    prompt_matches = re.findall(r"\*\*Prompt (\d{3})\*\*\s*>\s*(.*?)(?=\*\*Prompt|\Z)", raw_prompts_text, re.DOTALL)
+
+    # 极其健壮的正则：兼容 "Prompt 001:" 以及 "17. Prompt 017:" 格式，并过滤掉分类标题
+    prompt_matches = re.findall(r"Prompt (\d{3}):\s*(.*?)(?=\n*(?:\d{1,3}\.\s*)?Prompt \d{3}:|\Z)", raw_prompts_text, re.DOTALL)
 
     if not prompt_matches:
-        print("[后台 UGC] ❌ 提示词全集.md 解析失败，未找到有效的 **Prompt XXX** 结构！")
+        print("[后台 UGC] ❌ ugc_160_prompts.txt 解析失败，未匹配到任何 'Prompt XXX:' 结构！")
         return
 
     print(f"[后台 UGC] 成功加载 {len(prompt_matches)} 条精准提示词，启动 DeepSeek 1对1 生产...")
@@ -2143,8 +2139,7 @@ elif st.session_state["page"].startswith("⚙️"):
         |------|------|----------|----------|------------|
         | EEAT 权威基石 | 10 篇 | `{EEAT_VERIFIED_DIR}/` | ← raw_materials(草稿)→人工校验 | 自定义基石 Prompt |
         | 三级切片内容 | 30 篇 | `{PROD_DIR}/Slices_30/` | ← 10 篇基石 | CORP_PROMPT_TEMPLATES |
-        | 四级通用 UGC | 96 篇 | `{PROD_DIR}/UGC_160/General_96/` | ← 10基石+30切片 | V2_UGC_TEMPLATES |
-        | 四级引擎专属 | 64 篇 | `{PROD_DIR}/UGC_160/Specific_64/` | ← 10基石+30切片 | P_ENGINE_REWRITE |
+        | 四级定制 UGC | 160 篇 | `{PROD_DIR}/UGC_160_定制版/` | ← 10基石+30切片+案例库 | ugc_160_prompts.txt |
         | **总计** | **200 篇** | | | |
         """)
         st.success("🔗 数据传承链: raw_materials → 10基石 → 30切片 → 160UGC · 零中间件，直连注入")
