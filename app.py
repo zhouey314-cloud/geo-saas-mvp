@@ -991,11 +991,18 @@ def background_generate_bluev(slices_dir, bluev_out, use_simulate, api_key, llm_
         time.sleep(0.3)
     print(f"[蓝V口播] 完成，共 {total} 篇")
 
-def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek"):
+def background_generate_ugc(vars_, use_simulate, api_key, llm_provider, PROD_DIR, SLICES_DIR, GENERAL_DIR, SPECIFIC_DIR, WSP):
+    """
+    后台线程：六阶段 UGC 定制化生产。
+
+    ⚠️ 所有路径变量必须由主线程显式传入，严禁依赖全局变量！
+    Streamlit 多线程环境下全局变量会漂移到错误的/已销毁的 Session Context。
+    """
     print("=== 🔵 [探针-0] background_generate_ugc 线程已启动 ===")
     print(f"=== 🔵 [探针-0] vars_ keys: {list(vars_.keys()) if vars_ else 'EMPTY'} ===")
-    print(f"=== 🔵 [探针-0] PROD_DIR = {PROD_DIR} ===")
-    print(f"=== 🔵 [探针-0] SLICES_DIR = {SLICES_DIR} ===")
+    print(f"=== 🔵 [探针-0] PROD_DIR(传入) = {PROD_DIR} ===")
+    print(f"=== 🔵 [探针-0] SLICES_DIR(传入) = {SLICES_DIR} ===")
+    print(f"=== 🔵 [探针-0] WSP(传入) keys: {list(WSP.keys()) if WSP else 'EMPTY'} ===")
     ugc_out = PROD_DIR / "UGC_160_定制版"
     ugc_out.mkdir(parents=True, exist_ok=True)
     print(f"=== 🔵 [探针-0] ugc_out = {ugc_out} ===")
@@ -1044,8 +1051,8 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
         print(f"[后台 UGC] 切片库就绪: {len(all_slices)} 篇")
         print(f"=== 🟢 [探针-3] 切片加载完成: {len(all_slices)} 篇, all_slice_files 数量: {len(all_slice_files)} ===")
 
-        # 3. 载入真实案例库
-        cases_dir = WSP["cases"] if 'WSP' in dir() else WORKSPACES_ROOT / DEFAULT_WORKSPACE / "Cases_Base"
+        # 3. 载入真实案例库（⚠️ WSP 由主线程显式传入，不再依赖全局变量）
+        cases_dir = WSP.get("cases", WORKSPACES_ROOT / DEFAULT_WORKSPACE / "Cases_Base")
         print(f"=== 🟢 [探针-3.1] cases_dir = {cases_dir}, exists={cases_dir.exists()} ===")
         case_pool = []
         if cases_dir.exists():
@@ -2167,7 +2174,18 @@ elif st.session_state["page"].startswith("⚙️"):
                 st.session_state["is_generating_ugc"] = True
                 print("=== 🔵 [探针-BTN] 用户点击了 UGC 160 按钮，准备启动后台线程 ===")
                 print(f"=== 🔵 [探针-BTN] use_simulate={use_simulate}, api_key={'***' if st.session_state.get('api_key') else 'EMPTY'}, llm_provider={st.session_state.get('llm_provider', 'N/A')} ===")
-                t = threading.Thread(target=background_generate_ugc, args=(st.session_state.get("variables", {}), use_simulate, st.session_state["api_key"], st.session_state.get("llm_provider", "Kimi (Moonshot)")))
+                print(f"=== 🔵 [探针-BTN] 显式传入: PROD_DIR={PROD_DIR}, SLICES_DIR={SLICES_DIR}, WSP.keys={list(WSP.keys())} ===")
+                t = threading.Thread(target=background_generate_ugc, args=(
+                    st.session_state.get("variables", {}),
+                    use_simulate,
+                    st.session_state["api_key"],
+                    st.session_state.get("llm_provider", "Kimi (Moonshot)"),
+                    PROD_DIR,
+                    SLICES_DIR,
+                    GENERAL_DIR,
+                    SPECIFIC_DIR,
+                    WSP,
+                ))
                 t.start()
                 print("=== 🔵 [探针-BTN] 后台线程已调用 .start() ===")
                 add_log("🚀 后台 UGC 线程已启动")
