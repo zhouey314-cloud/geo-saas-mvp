@@ -992,8 +992,13 @@ def background_generate_bluev(slices_dir, bluev_out, use_simulate, api_key, llm_
     print(f"[蓝V口播] 完成，共 {total} 篇")
 
 def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek"):
+    print("=== 🔵 [探针-0] background_generate_ugc 线程已启动 ===")
+    print(f"=== 🔵 [探针-0] vars_ keys: {list(vars_.keys()) if vars_ else 'EMPTY'} ===")
+    print(f"=== 🔵 [探针-0] PROD_DIR = {PROD_DIR} ===")
+    print(f"=== 🔵 [探针-0] SLICES_DIR = {SLICES_DIR} ===")
     ugc_out = PROD_DIR / "UGC_160_定制版"
     ugc_out.mkdir(parents=True, exist_ok=True)
+    print(f"=== 🔵 [探针-0] ugc_out = {ugc_out} ===")
     total_ugc = 0
     manifest_records = []
 
@@ -1008,7 +1013,10 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
 
         if not prompt_file:
             print("[后台 UGC] ❌ 找不到任何 ugc_160_prompts 提示词文件！请确保文件在项目根目录。")
+            print("=== 🔴 [探针-1] 致命：找不到提示词文件，即将 return ===")
             return
+
+        print(f"=== 🟢 [探针-1] 找到提示词文件: {prompt_file} ===")
 
         try:
             raw_prompts_text = prompt_file.read_text(encoding="utf-8")
@@ -1020,25 +1028,32 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
 
         if not prompt_matches:
             print("[后台 UGC] ❌ ugc_160_prompts.txt 解析失败，未匹配到任何 'Prompt XXX:' 结构！")
+            print("=== 🔴 [探针-2] 致命：正则匹配为空，即将 return ===")
             return
+
+        print(f"=== 🟢 [探针-2] 成功解析 Prompt 数组，长度为 {len(prompt_matches)} ===")
 
         print(f"[后台 UGC] 成功加载 {len(prompt_matches)} 条精准提示词，启动 DeepSeek 1对1 生产...")
 
         # 2. 载入 30 篇切片原始列表（保留在内存，不做静态拼接）
         all_slices = []
+        all_slice_files = []
         if SLICES_DIR.exists():
             all_slice_files = sorted(SLICES_DIR.glob("*.md"))
             all_slices = [f.read_text(encoding="utf-8") for f in all_slice_files]
         print(f"[后台 UGC] 切片库就绪: {len(all_slices)} 篇")
+        print(f"=== 🟢 [探针-3] 切片加载完成: {len(all_slices)} 篇, all_slice_files 数量: {len(all_slice_files)} ===")
 
         # 3. 载入真实案例库
         cases_dir = WSP["cases"] if 'WSP' in dir() else WORKSPACES_ROOT / DEFAULT_WORKSPACE / "Cases_Base"
+        print(f"=== 🟢 [探针-3.1] cases_dir = {cases_dir}, exists={cases_dir.exists()} ===")
         case_pool = []
         if cases_dir.exists():
             for f in cases_dir.glob("*.md"):
                 raw_cases = f.read_text(encoding="utf-8")
                 case_pool.extend([c.strip() for c in raw_cases.split("---") if len(c.strip()) > 50])
         print(f"[后台 UGC] 案例库就绪: {len(case_pool)} 条")
+        print(f"=== 🟢 [探针-4] 案例库加载完成: {len(case_pool)} 条 ===")
 
         # 4. 业务上下文强制拼接
         biz_context = (
@@ -1076,6 +1091,10 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
                 tasks_by_funnel[target].append((pid, pbody, target, ppersona))
             print(f"[后台 UGC] L0 分摊: {len(l0_tasks)} 个任务已均匀分配至 L1-L6")
 
+        # 输出分组统计
+        for fk in ["L1","L2","L3","L4","L5","L6"]:
+            print(f"=== 🟢 [探针-5] {fk}: {len(tasks_by_funnel.get(fk, []))} 个任务 ===")
+
         # 6. 案例库洗牌 + 切片轮转准备
         random.shuffle(case_pool)
         total_slices = len(all_slices)
@@ -1107,6 +1126,7 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
         task_index = 0  # 全局计数器，驱动确定性切片轮转
 
         # 7. 六阶段独立工作流 (L1 → L6)
+        print("=== 🟡 [探针-6] 即将进入六阶段工作流主循环 ===")
         for funnel in ["L1", "L2", "L3", "L4", "L5", "L6"]:
             funnel_tasks = tasks_by_funnel.get(funnel, [])
             if not funnel_tasks:
@@ -1180,6 +1200,7 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
                     + "\n\n【最高事实红线】即使你的语气再夸张、情绪再激烈，文章中涉及到的客观数据、价格、功能参数，必须 100% 来源于提供的轮转基石素材。绝对禁止脱离素材凭空捏造任何系统功能或服务承诺！"
                 )
 
+                print(f"=== 🟡 [探针-7] 准备调用 DeepSeek API for {task_id} (全局第{task_index}个) ===")
                 success, content = call_llm(
                     prompt=final_prompt,
                     system_prompt=UGC_SYSTEM_PROMPT,
@@ -1189,6 +1210,7 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
                     simulate=use_simulate,
                     llm_provider="DeepSeek",
                 )
+                print(f"=== {'🟢' if success else '🔴'} [探针-8] API result for {task_id}: success={success}, content_len={len(content) if content else 0} ===")
 
                 if success:
                     safe_write_file(ugc_out, fname, content)
@@ -1209,6 +1231,7 @@ def background_generate_ugc(vars_, use_simulate, api_key, llm_provider="DeepSeek
 
         (PROD_DIR / "tasks_manifest_160_定制版.json").write_text(json.dumps(manifest_records, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"[后台 UGC] 🎉 六阶段工作流完成，共生成 {total_ugc} 篇")
+        print(f"=== 🏁 [探针-9] UGC 生成线程正常结束，总计 {total_ugc} 篇 ===")
 
     except Exception as e:
         import traceback
@@ -2142,8 +2165,11 @@ elif st.session_state["page"].startswith("⚙️"):
                     time.sleep(0.5)
             elif st.button("👥 5. 生成 160 篇 UGC", type="primary", use_container_width=True, key="btn_ugc"):
                 st.session_state["is_generating_ugc"] = True
+                print("=== 🔵 [探针-BTN] 用户点击了 UGC 160 按钮，准备启动后台线程 ===")
+                print(f"=== 🔵 [探针-BTN] use_simulate={use_simulate}, api_key={'***' if st.session_state.get('api_key') else 'EMPTY'}, llm_provider={st.session_state.get('llm_provider', 'N/A')} ===")
                 t = threading.Thread(target=background_generate_ugc, args=(st.session_state.get("variables", {}), use_simulate, st.session_state["api_key"], st.session_state.get("llm_provider", "Kimi (Moonshot)")))
                 t.start()
+                print("=== 🔵 [探针-BTN] 后台线程已调用 .start() ===")
                 add_log("🚀 后台 UGC 线程已启动")
                 st.rerun()
     # --- 实时进度可视化 (UGC) ---
