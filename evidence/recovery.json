@@ -1,0 +1,18 @@
+{
+  "remote": "https://github.com/zhouey314-cloud/geo-saas-mvp.git",
+  "base_commit": "24f682cb3791d115bab653a89f4b2aa59a58f9b0",
+  "recovery_commit": "dd06cd005cad47baa43341e25be6e73610af0e49",
+  "base_app_bytes": 49968,
+  "base_app_sha256": "6b717dbe56ed51d297b01c03dbc2ccf8b37f9cb804f53911539ea6aaa6cffa39",
+  "recovery_app_bytes": 136009,
+  "restored_parent_lines": [
+    792,
+    2363
+  ],
+  "retained_base_lines": [
+    1,
+    792
+  ],
+  "baseline": "SyntaxError: unterminated string literal at app.py:793",
+  "constraints": "Local repair only; no API calls, push, PR, merge, deployment or original-worktree mutation."
+}

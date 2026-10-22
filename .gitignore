@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+.streamlit/secrets.toml
+workspaces/
+Raw_Materials/
+production_error_log.txt
