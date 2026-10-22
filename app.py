@@ -375,7 +375,6 @@ st.set_page_config(
 # ============================================================
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
     .main-title { font-size: 1.7rem; font-weight: 700; color: #1a1a2e; margin-bottom: 0.1rem; }
     .sub-title { font-size: 0.85rem; color: #6b7280; margin-bottom: 1rem; }
@@ -1422,7 +1421,6 @@ def scan_all_files(_workspace_root: str = "") -> list[dict]:
 # 侧边栏: API Key + 导航
 # ============================================================
 with st.sidebar:
-    st.image("https://img.icons8.com/fluency/96/artificial-intelligence.png", width=44)
     st.markdown("## 🏭 GEO SaaS 中台")
     st.markdown("---")
 
@@ -1460,7 +1458,7 @@ with st.sidebar:
             st.session_state[key] = deepcopy(value)
         st.session_state["page"] = current_page
         for key in list(st.session_state):
-            if key.startswith(("var_", "fu_", "chk_")) or key in {"ta_case_editor", "show_case_saved_msg"}:
+            if key.startswith(("var_", "fu_", "chk_", "raw_preview:", "ta_case_editor:")) or key == "show_case_saved_msg":
                 del st.session_state[key]
         st.session_state["workspace_name"] = workspace_name
     RAW_DIR = WSP["raw"]
@@ -1578,12 +1576,12 @@ if st.session_state["page"].startswith("📊"):
             with col_sel1:
                 if st.button("✅ 全选当前列表", use_container_width=True, key="btn_select_all"):
                     for i, a in enumerate(fa):
-                        st.session_state[f"chk_{i}_{a['filename'][:15]}"] = True
+                        st.session_state[f"chk_{workspace_name}:{i}_{a['filename'][:15]}"] = True
                     st.rerun()
             with col_sel2:
                 if st.button("🔲 取消全选", use_container_width=True, key="btn_deselect_all"):
                     for i, a in enumerate(fa):
-                        st.session_state[f"chk_{i}_{a['filename'][:15]}"] = False
+                        st.session_state[f"chk_{workspace_name}:{i}_{a['filename'][:15]}"] = False
                     st.rerun()
 
         # --- 批量下载 ZIP ---
@@ -1592,7 +1590,7 @@ if st.session_state["page"].startswith("📊"):
             for i, a in enumerate(fa):
                 cols = st.columns([0.5, 3.5, 1])
                 with cols[0]:
-                    if st.checkbox("", key=f"chk_{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+                    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
                         checked_paths.append(a["path"])
                 with cols[1]:
                     is_sel = st.session_state["selected_path"] == a["path"]
@@ -1740,7 +1738,7 @@ elif st.session_state["page"].startswith("⚙️"):
             "上传企业原始资料",
             type=["txt", "md", "docx", "pdf"],
             accept_multiple_files=True,
-            key="fu_materials",
+            key=f"fu_materials:{workspace_name}",
             help="支持 .txt .md .docx .pdf 多格式文档批量上传。",
         )
     with col_a2:
@@ -1778,7 +1776,7 @@ elif st.session_state["page"].startswith("⚙️"):
         st.session_state["raw_files_loaded"] = True
         st.success(f"✅ 已加载 {len(all_texts)} 个文件，共 {len(combined):,} 字符")
         with st.expander("📄 预览原始资料（前 5000 字符）", expanded=False):
-            st.text_area("raw_preview", value=combined[:5000], height=200, disabled=True, label_visibility="collapsed")
+            st.text_area("raw_preview", value=combined[:5000], height=200, disabled=True, label_visibility="collapsed", key=f"raw_preview:{workspace_name}")
     else:
         st.info("👆 请上传企业资料文件，或将文件放入 `Raw_Materials/` 目录后点击\"读取本地资料库\"。")
 
@@ -1869,7 +1867,7 @@ elif st.session_state["page"].startswith("⚙️"):
                         f"**{key}**",
                         value=current_val,
                         help=meta["help"],
-                        key=f"var_{key}",
+                        key=f"var_{workspace_name}:{key}",
                     )
                     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -1915,7 +1913,7 @@ elif st.session_state["page"].startswith("⚙️"):
         "上传已校验的 10 篇 EEAT 基石 (.md / .docx)",
         type=["md", "docx"],
         accept_multiple_files=True,
-        key="fu_verified",
+        key=f"fu_verified:{workspace_name}",
         help="支持上传 .md 或 .docx 格式。Word 文档将自动提取纯文本并以 .md 后缀保存。至少需要 10 篇。",
     )
 
@@ -2002,7 +2000,7 @@ elif st.session_state["page"].startswith("⚙️"):
             "在此批量上传切片 (.md / .docx / .txt)",
             type=["md", "docx", "txt"],
             accept_multiple_files=True,
-            key="fu_slices_skip",
+            key=f"fu_slices_skip:{workspace_name}",
             help="支持批量框选上传。上传后将自动跳过生成，直接解锁后续步骤。"
         )
         if st.button("📥 保存上传并解锁下一步", type="secondary", use_container_width=True, key="btn_upload_slices"):
@@ -2140,7 +2138,7 @@ elif st.session_state["page"].startswith("⚙️"):
                         status.update(label="⚠️ 全局扫描结束，资料中未识别到符合标准的案例", state="error")
 
     with col_upload:
-        uploaded_cases = st.file_uploader("或手动上传独立案例库 (.txt, .md, .docx, .pdf)", type=["txt", "md", "docx", "pdf"], accept_multiple_files=True, key="fu_cases", label_visibility="collapsed")
+        uploaded_cases = st.file_uploader("或手动上传独立案例库 (.txt, .md, .docx, .pdf)", type=["txt", "md", "docx", "pdf"], accept_multiple_files=True, key=f"fu_cases:{workspace_name}", label_visibility="collapsed")
         if st.button("📥 保存手动上传的案例", use_container_width=True, key="btn_save_cases"):
             if uploaded_cases:
                 cases_dir = WSP["cases"]
@@ -2168,7 +2166,7 @@ elif st.session_state["page"].startswith("⚙️"):
                 "✏️ 在此直接增删改案例内容（案例之间请用 --- 分隔）",
                 value=merged_cases,
                 height=400,
-                key="ta_case_editor",
+                key=f"ta_case_editor:{workspace_name}",
                 help="直接编辑文本。完成后点击下方保存按钮。",
             )
 
@@ -2265,7 +2263,7 @@ elif st.session_state["page"].startswith("⚙️"):
         "上传待检文章 (.txt, .md, .docx, .pdf)",
         type=["txt", "md", "docx", "pdf"],
         accept_multiple_files=True,
-        key="fu_fact_check",
+        key=f"fu_fact_check:{workspace_name}",
         help="上传生成的切片或 UGC 文章，支持多选。",
     )
 
@@ -2352,7 +2350,7 @@ elif st.session_state["page"].startswith("⚙️"):
         "上传待检文章 (.txt, .md, .docx, .pdf)",
         type=["txt", "md", "docx", "pdf"],
         accept_multiple_files=True,
-        key="fu_forbidden",
+        key=f"fu_forbidden:{workspace_name}",
         help="上传最终待发布的文章，逐篇扫描违禁词。",
     )
 

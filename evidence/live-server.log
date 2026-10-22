@@ -1,0 +1,787 @@
+2026-10-23 00:15:01.108 Uvicorn server started on 127.0.0.1:18763
+
+  You can now view your Streamlit app in your browser.
+
+  URL: http://127.0.0.1:18763
+
+2026-10-23 00:15:41.201 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.204 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.205 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.206 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.207 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.208 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.209 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.211 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.212 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.214 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.216 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.217 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.219 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.221 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.222 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.224 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.225 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.226 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.227 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.229 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.230 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.232 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.233 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.235 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.236 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.237 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.238 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.239 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.241 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+2026-10-23 00:15:41.243 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+Stack (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1012, in _bootstrap
+    self._bootstrap_inner()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 419, in _run_script_thread
+    self._run_script(request.rerun_data)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 814, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 129, in exec_func_with_error_handling
+    result = func()
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 789, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/ethanyu/Documents/Codex/2026-10-22/task-2/localhost-smoke/runtime/app.py", line 1593, in <module>
+    if st.checkbox("", key=f"chk_{workspace_name}:{i}_{a['filename'][:15]}", label_visibility="collapsed"):
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 698, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 201, in checkbox
+    return self._checkbox(
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/widgets/checkbox.py", line 395, in _checkbox
+    maybe_raise_label_warnings(label, label_visibility)
+  File "/opt/homebrew/lib/python3.13/site-packages/streamlit/elements/lib/policies.py", line 194, in maybe_raise_label_warnings
+    _LOGGER.warning(
+  Stopping...

@@ -53,6 +53,10 @@ class AppTests(unittest.TestCase):
         self.assertGreater(len(self.at.button), 5)
         self.assertTrue(any("缺少 ugc_160_prompts" in w.value for w in self.at.warning))
 
+    def test_rendered_page_has_no_remote_resource_defaults(self):
+        self.assertEqual(len(self.at.get("imgs")), 0)
+        self.assertFalse(any("@import" in m.value for m in self.at.markdown))
+
     def test_offline_manual_variables_can_be_confirmed(self):
         raw = self.root / "workspaces" / "默认项目" / "Raw_Materials" / "synthetic.txt"
         raw.write_text("Synthetic company facts for offline testing only.")
@@ -133,6 +137,29 @@ class AppTests(unittest.TestCase):
         self.assertEqual(self.at.session_state["variables"], {})
         self.assertFalse(self.at.session_state["variables_confirmed"])
         self.assertFalse(self.at.session_state["raw_files_loaded"])
+
+    def test_real_widget_edits_do_not_follow_workspace_selector(self):
+        for name in ("SYNTHETIC A", "SYNTHETIC B"):
+            paths = self.api["get_workspace_paths"](name)
+            (paths["raw"] / "synthetic.txt").write_text(f"Synthetic facts for {name}")
+        self.at.run()
+        self.at.selectbox(key="ws_selector").set_value("SYNTHETIC A").run()
+        self.production()
+        company = next(t for t in self.at.text_input if t.label == "**企业主体**")
+        company_a_key = company.key
+        company.set_value("SYNTHETIC_ORG_A_ONLY").run()
+        self.at.button(key="btn_confirm_vars").click().run()
+        self.assertTrue(self.at.session_state["variables_confirmed"])
+        self.at.selectbox(key="ws_selector").set_value("SYNTHETIC B").run()
+        self.assertFalse(self.at.exception, [e.message for e in self.at.exception])
+        company_b = next(t for t in self.at.text_input if t.label == "**企业主体**")
+        # The browser can replay an old widget value even after server-side
+        # session deletion. Project-specific controls need distinct identities.
+        self.assertNotEqual(company_a_key, company_b.key)
+        self.assertNotEqual(company_b.value, "SYNTHETIC_ORG_A_ONLY")
+        self.assertFalse(self.at.session_state["variables_confirmed"])
+        self.assertNotIn("SYNTHETIC A", self.at.session_state["raw_text_combined"])
+        self.assertIn("SYNTHETIC B", self.at.session_state["raw_text_combined"])
 
     def test_simulation_succeeds_without_client_or_credentials(self):
         ok, text = self.api["call_llm"]("测试内容，要求 200-250 字", simulate=True, llm_provider="Kimi (Moonshot)")

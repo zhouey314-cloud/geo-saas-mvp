@@ -1,5 +1,7 @@
 # 本地修复记录 · 2026-10-23 北京时间 00:03
 
+本页保留第一轮记录。后续已按新增授权完成真实 localhost 启动和浏览器验收，并修复实际发现的控件串值，见 [LOCAL_SMOKE.md](LOCAL_SMOKE.md)。
+
 ## 版本与隔离
 
 - 目标仅为个人公开仓库 `zhouey314-cloud/geo-saas-mvp`。
