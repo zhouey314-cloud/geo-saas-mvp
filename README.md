@@ -3,6 +3,12 @@
 自动裂变文章 拥有详细的提示词生成GEO文章
 适用于GEO文章产出，GEO文章权重的裂变 
 
+## 当前状态与范围（2026-10-23）
+
+旧公开 Streamlit 应用已从公开 Git 历史恢复完整源码；本地语法检查、17 项离线回归和两页 localhost 浏览器 smoke 通过。当前修复的来源、基线失败、验证与限制见 [PUBLIC_REPAIR.md](PUBLIC_REPAIR.md)；远端结果以 [Offline regression tests](https://github.com/zhouey314-cloud/geo-saas-mvp/actions/workflows/tests.yml) 为准。
+
+这是旧公开演示项目；模型生成质量、事实准确性、长任务并发和 200 篇生产流程均为 **NOT_RUN**，不代表公司线上系统。项目目录隔离是本地文件和控件隔离，不是已认证的多用户租户权限系统。仓库未附许可文件，本次保持原作者与历史，不新增或更改授权条款。
+
 ## 本地运行与验证
 
 本轮验证环境：Python 3.13.3；依赖版本见 `requirements.txt`。
@@ -30,4 +36,4 @@ git diff --check
 
 仓库**不包含** `ugc_160_prompts.txt`（或编号变体），160 篇 UGC 生成会提示缺失并禁用按钮，需要用户提供已经确认的原始模板。模拟变量提取没有真实语义能力，可在离线模式下手动填写确认。真实模型质量、费用、并发长任务和端到端 200 篇生产没有在本轮验证。
 
-完整证据与限制见 [LOCAL_REPAIR.md](LOCAL_REPAIR.md) 和 [evidence/](evidence/)。
+当前证据与限制见 [PUBLIC_REPAIR.md](PUBLIC_REPAIR.md)。[LOCAL_REPAIR.md](LOCAL_REPAIR.md) 和 [LOCAL_SMOKE.md](LOCAL_SMOKE.md) 是本轮公开修复之前的本地历史记录，其中“未推送/未创建 PR”等仅描述各自记录时点。

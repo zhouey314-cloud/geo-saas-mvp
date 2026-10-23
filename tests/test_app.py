@@ -172,6 +172,22 @@ class AppTests(unittest.TestCase):
         self.assertFalse(ok)
         self.assertIn("API Key", text)
 
+    def test_runtime_missing_credentials_fail_without_constructing_provider(self):
+        fn = self.api["call_llm"]
+        self.assertFalse(self.at.session_state["api_key_configured"])
+        for provider, key_name in (("DeepSeek", "DEEPSEEK_API_KEY"), ("Kimi (Moonshot)", "DEFAULT_KIMI_API_KEY")):
+            with self.subTest(provider=provider):
+                key = fn.__globals__[key_name]
+                self.assertEqual(key, "")
+                ok, message = fn("synthetic prompt", simulate=False, api_key=key, llm_provider=provider)
+                self.assertFalse(ok)
+                self.assertIn("API Key", message)
+        for key in ("   ", "your_kimi_api_key_here", "your_deepseek_api_key_here"):
+            with self.subTest(key=key):
+                ok, message = fn("synthetic prompt", simulate=False, api_key=key)
+                self.assertFalse(ok)
+                self.assertIn("API Key", message)
+
     def test_token_limit_reaches_mock_transport(self):
         fn = self.api["call_llm"]
         client = Mock()

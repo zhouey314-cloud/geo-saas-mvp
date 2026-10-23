@@ -272,9 +272,9 @@ LONG_TEXT_GROUNDING_PROMPT = """【最高事实红线与长文本检索指令】
 # ============================================================
 # LLM 引擎 API 配置（双引擎热切换）
 # ============================================================
-# ⚠️ 警告：已移除硬编码的 API Key。请通过环境变量或 st.secrets 传入，切勿将明文 Key 推送到 GitHub！
-DEFAULT_KIMI_API_KEY = os.getenv("KIMI_API_KEY", "your_kimi_api_key_here")
-DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "your_deepseek_api_key_here")
+# ⚠️ 警告：已移除硬编码的 API Key。请通过环境变量传入，切勿将明文 Key 推送到 GitHub！
+DEFAULT_KIMI_API_KEY = os.getenv("KIMI_API_KEY", "").strip()
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "").strip()
 
 LLM_CONFIGS = {
     "DeepSeek": {
@@ -697,7 +697,8 @@ def call_llm(
         time.sleep(0.08)
         return True, _generate_simulated_content(prompt, system_prompt, llm_provider)
 
-    if not api_key:
+    api_key = api_key.strip()
+    if not api_key or api_key in {"your_kimi_api_key_here", "your_deepseek_api_key_here"}:
         return False, "❌ 真实生成需要配置对应引擎的环境变量 API Key；也可勾选模拟模式。"
 
     if not OPENAI_AVAILABLE:
@@ -1513,7 +1514,7 @@ with st.sidebar:
     selected_llm = "DeepSeek"
     st.session_state["llm_provider"] = selected_llm
     st.session_state["api_key"] = DEEPSEEK_API_KEY
-    st.session_state["api_key_configured"] = True
+    st.session_state["api_key_configured"] = bool(DEEPSEEK_API_KEY) and DEEPSEEK_API_KEY != "your_deepseek_api_key_here"
     use_simulate = st.checkbox("模拟模式（不调用 API，仅生成占位内容）", value=True, key="simulate_mode")
     if use_simulate:
         st.caption("当前为离线模拟模式，产出不能作为真实交付内容。")
