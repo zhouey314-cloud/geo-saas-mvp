@@ -1,0 +1,31 @@
+{
+  "base_commit": "24f682cb3791d115bab653a89f4b2aa59a58f9b0",
+  "public_restore_source": "dd06cd005cad47baa43341e25be6e73610af0e49",
+  "baseline_parse": {
+    "error": "unterminated string literal (detected at line 793)",
+    "line": 793
+  },
+  "current_app_sha256": "2ba3c578dd009935b7f143467092d0b68b4c19d15cf076e9f0995514b1b34252",
+  "parent_app_lines": 2363,
+  "current_app_lines": 2404,
+  "parent_functions": 26,
+  "missing_parent_functions": [],
+  "unchanged_prompt_assignments": [
+    "P_KB_01_TEMPLATE",
+    "CORP_PROMPT_TEMPLATES",
+    "PROMPT_EXTRACT_VARS",
+    "GEO_STRICT_SYSTEM_PROMPT",
+    "UGC_SYSTEM_PROMPT",
+    "FACT_GROUNDING_PROMPT",
+    "EDITOR_HARD_LIMIT_PROMPT",
+    "FACT_CHECK_PROMPT",
+    "CASE_DISTILLATION_PROMPT",
+    "LONG_TEXT_GROUNDING_PROMPT"
+  ],
+  "changed_prompt_assignments": [],
+  "current_credential_pattern_findings": [],
+  "historical_credentials_used": false,
+  "real_model_eval": "NOT_RUN",
+  "ugc_templates": "BLOCKED_MISSING_SOURCE",
+  "ai_quality_gate": "BLOCKED_NO_VERIFIED_DATASET_OR_MODEL_RUN"
+}

@@ -1,0 +1,4 @@
+  File "app.py", line 793
+    clean = re.sub(r"\n?
+                   ^
+SyntaxError: unterminated string literal (detected at line 793)

@@ -1,0 +1,53 @@
+test_both_pages_render_and_default_to_offline (test_app.AppTests.test_both_pages_render_and_default_to_offline) ... 2026-10-23 23:51:31.439 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_invalid_workspace_is_reported_without_ui_exception (test_app.AppTests.test_invalid_workspace_is_reported_without_ui_exception) ... 2026-10-23 23:51:32.723 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_invalid_workspace_names_cannot_escape_or_alias_root (test_app.AppTests.test_invalid_workspace_names_cannot_escape_or_alias_root) ... 2026-10-23 23:51:33.005 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_missing_ugc_templates_disable_generation (test_app.AppTests.test_missing_ugc_templates_disable_generation) ... 2026-10-23 23:51:33.098 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_offline_manual_variables_can_be_confirmed (test_app.AppTests.test_offline_manual_variables_can_be_confirmed) ... 2026-10-23 23:51:33.276 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_output_symlink_cannot_overwrite_another_file (test_app.AppTests.test_output_symlink_cannot_overwrite_another_file) ... 2026-10-23 23:51:33.546 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_real_mode_without_key_fails_instead_of_faking_success (test_app.AppTests.test_real_mode_without_key_fails_instead_of_faking_success) ... 2026-10-23 23:51:33.626 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_real_widget_edits_do_not_follow_workspace_selector (test_app.AppTests.test_real_widget_edits_do_not_follow_workspace_selector) ... 2026-10-23 23:51:33.702 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_rendered_page_has_no_remote_resource_defaults (test_app.AppTests.test_rendered_page_has_no_remote_resource_defaults) ... 2026-10-23 23:51:34.244 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_runtime_missing_credentials_fail_without_constructing_provider (test_app.AppTests.test_runtime_missing_credentials_fail_without_constructing_provider) ... 2026-10-23 23:51:34.323 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+FAIL
+test_simulation_succeeds_without_client_or_credentials (test_app.AppTests.test_simulation_succeeds_without_client_or_credentials) ... 2026-10-23 23:51:34.400 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_slice_worker_uses_explicit_workspace_source (test_app.AppTests.test_slice_worker_uses_explicit_workspace_source) ... 2026-10-23 23:51:34.560 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_switching_workspace_clears_previous_material_and_variables (test_app.AppTests.test_switching_workspace_clears_previous_material_and_variables) ... 2026-10-23 23:51:34.653 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-10-23 23:51:34.820 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-10-23 23:51:34.820 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-10-23 23:51:34.820 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-10-23 23:51:34.820 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-10-23 23:51:34.820 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_text_upload_export_and_workspace_scan (test_app.AppTests.test_text_upload_export_and_workspace_scan) ... 2026-10-23 23:51:34.899 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_token_limit_reaches_mock_transport (test_app.AppTests.test_token_limit_reaches_mock_transport) ... 2026-10-23 23:51:34.992 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_workspace_and_nested_symlinks_are_rejected (test_app.AppTests.test_workspace_and_nested_symlinks_are_rejected) ... 2026-10-23 23:51:35.067 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+test_workspace_root_symlink_is_rejected (test_app.AppTests.test_workspace_root_symlink_is_rejected) ... 2026-10-23 23:51:35.143 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+ok
+
+======================================================================
+FAIL: test_runtime_missing_credentials_fail_without_constructing_provider (test_app.AppTests.test_runtime_missing_credentials_fail_without_constructing_provider)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ethanyu/Documents/Codex/2026-10-23/github-codex-20261023-txt-github-zhouey314/work/geo-saas-mvp/tests/test_app.py", line 177, in test_runtime_missing_credentials_fail_without_constructing_provider
+    self.assertFalse(self.at.session_state["api_key_configured"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false
+
+----------------------------------------------------------------------
+Ran 17 tests in 4.328s
+
+FAILED (failures=1)

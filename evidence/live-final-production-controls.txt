@@ -1,0 +1,103 @@
+- button "keyboard_double_arrow_left" [ref=e38]
+- heading "🏭 GEO SaaS 中台" [level=2, ref=e2]
+- heading "📁 项目工作区" [level=3, ref=e3]
+- generic "SMOKE_Aopen" [ref=e4] clickable [onclick]
+  - generic "SMOKE_Aopen" [ref=e16] clickable [onclick]
+    - combobox "Selected SMOKE_A. 选择或新建项目" [expanded=false, ref=e33]
+- LabelText "模拟模式（不调用 API，仅生成占位内容）" [ref=e5] clickable [cursor:pointer]
+  - checkbox "模拟模式（不调用 API，仅生成占位内容）" [checked=true, ref=e18]
+- heading "📋 功能导航" [level=3, ref=e39]
+- radiogroup "选择工作台" [ref=e40] clickable [cursor:pointer]
+  - radio "📊 交付资产大盘" [checked=false, ref=e96]
+  - radio "⚙️ 自动化生产车间" [checked=true, ref=e97]
+- button "Deploy" [ref=e22]
+- generic [ref=e12] clickable [onclick]
+  - button "Main menu" [expanded=false, ref=e23]
+- generic "html, body, [class*=\"css\"] { font-family: 'Inter', -apple-system, sans-serif; }\n    .main-title { fo" [ref=e1] focusable [tabindex]
+  - heading "📥 步骤 1：上传并读取企业原始资料" [level=3, ref=e41]
+    - link "Link to heading" [ref=e98]
+  - button "Help for 上传企业原始资料" [ref=e99]
+  - region "上传企业原始资料" [ref=e42] clickable [cursor:pointer, onclick, tabindex]
+    - button "选择文件" [ref=e61]: 未选择任何文件
+    - button "upload Upload" [ref=e62]
+  - button "📂 读取本地资料库" [ref=e63]
+  - heading "🔧 步骤 2：全局变量提取与确认 ⚠️ 必经步骤" [level=3, ref=e43]
+    - link "Link to heading" [ref=e100]
+  - button "🤖 AI 提取全局变量" [ref=e64]
+  - heading "📝 变量确认面板（请逐项核对并修改）" [level=4, ref=e44]
+    - link "Link to heading" [ref=e101]
+  - button "Help for **企业主体**" [ref=e117]
+  - textbox "**企业主体**" [ref=e65]: XX科技有限公司
+  - button "Help for **行业**" [ref=e118]
+  - textbox "**行业**" [ref=e66]: 企业服务
+  - button "Help for **用户画像**" [ref=e119]
+  - textbox "**用户画像**" [ref=e67]: 30-45岁企业中层管理者
+  - button "Help for **痛点**" [ref=e120]
+  - textbox "**痛点**" [ref=e68]: 系统操作繁琐、数据孤岛
+  - button "Help for **概念**" [ref=e121]
+  - textbox "**概念**" [ref=e69]: 全链路数字化转型与GEO降本增效
+  - button "Help for **品牌_项目**" [ref=e122]
+  - textbox "**品牌_项目**" [ref=e70]: GEO 品牌 AI 占位服务
+  - button "Help for **品牌_A**" [ref=e123]
+  - textbox "**品牌_A**" [ref=e71]: 海外头部品牌
+  - button "Help for **品牌_B**" [ref=e124]
+  - textbox "**品牌_B**" [ref=e72]: 传统老牌厂商
+  - button "Help for **品牌_C**" [ref=e125]
+  - textbox "**品牌_C**" [ref=e73]: 低价外包服务商
+  - button "Help for **五个维度**" [ref=e126]
+  - textbox "**五个维度**" [ref=e74]: 产品功能、服务响应、价格、用户体验、数据安全
+  - button "Help for **优惠信息**" [ref=e127]
+  - textbox "**优惠信息**" [ref=e75]: 首月免费试用，赠送一次定制方案咨询
+  - button "Help for **CTA行动**" [ref=e128]
+  - textbox "**CTA行动**" [ref=e76]: 立即预约免费方案演示，扫码领取行业白皮书
+  - button "✅ 确认变量，解锁后续生产步骤" [ref=e77]
+  - heading "🔍 步骤 3：人工校验基石重载区 (唯一事实源锁定)" [level=3, ref=e45]
+    - link "Link to heading" [ref=e102]
+  - button "Help for 上传已校验的 10 篇 EEAT 基石 (.md / .docx)" [ref=e103]
+  - region "上传已校验的 10 篇 EEAT 基石 (.md / .docx)" [ref=e46] clickable [cursor:pointer, onclick, tabindex]
+    - button "选择文件" [ref=e78]: 未选择任何文件
+    - button "upload Upload" [ref=e79]
+  - button "🔄 保存已校验基石并锁定数据源" [ref=e80]
+  - heading "✂️ 步骤 4：裂变 30 篇【企业官方视角】三级切片 (L1-L6 均分)" [level=3, ref=e47]
+    - link "Link to heading" [ref=e104]
+  - heading "方案 A：AI 全自动裂变" [level=4, ref=e48]
+    - link "Link to heading" [ref=e105]
+  - heading "方案 B：直接导入已有切片" [level=4, ref=e49]
+    - link "Link to heading" [ref=e106]
+  - button "Help for 在此批量上传切片 (.md / .docx / .txt)" [ref=e107]
+  - region "在此批量上传切片 (.md / .docx / .txt)" [ref=e50] clickable [cursor:pointer, onclick, tabindex]
+    - button "选择文件" [ref=e81]: 未选择任何文件
+    - button "upload Upload" [ref=e82]
+  - button "📥 保存上传并解锁下一步" [ref=e83]
+  - heading "🎥 步骤 4.5：一键生成【蓝V短视频口播脚本】" [level=3, ref=e51]
+    - link "Link to heading" [ref=e108]
+  - button "🎥 一键生成 30 篇短视频口播稿" [ref=e84]
+  - heading "📚 步骤 4.8：独立案例库提纯 (UGC 防同质化核心)" [level=3, ref=e52]
+    - link "Link to heading" [ref=e109]
+  - heading "💎 核心引擎：独立案例库管理 (防同质化)" [level=4, ref=e53]
+    - link "Link to heading" [ref=e110]
+  - button "🤖 一键从原始资料蒸馏真实案例" [ref=e85]
+  - region "或手动上传独立案例库 (.txt, .md, .docx, .pdf)" [ref=e54] clickable [cursor:pointer, onclick, tabindex]
+    - button "选择文件" [ref=e86]: 未选择任何文件
+    - button "upload Upload" [ref=e87]
+  - button "📥 保存手动上传的案例" [ref=e88]
+  - heading "👥 步骤 5：重构 160 篇【真实用户视角】UGC 内容" [level=3, ref=e55]
+    - link "Link to heading" [ref=e111]
+  - button "👥 5. 生成 160 篇 UGC" [disabled, ref=e89]
+  - heading "🕵️ 步骤 6：终极质检（全量知识库防幻觉智能体）" [level=3, ref=e56]
+    - link "Link to heading" [ref=e112]
+  - button "Help for 上传待检文章 (.txt, .md, .docx, .pdf)" [ref=e113]
+  - region "上传待检文章 (.txt, .md, .docx, .pdf)" [ref=e57] clickable [cursor:pointer, onclick, tabindex]
+    - button "选择文件" [ref=e90]: 未选择任何文件
+    - button "upload Upload" [ref=e91]
+  - button "🔬 开始深度事实核查" [ref=e92]
+  - heading "🚫 步骤 7：合规与广告法质检（违禁词扫描）" [level=3, ref=e58]
+    - link "Link to heading" [ref=e114]
+  - button "Help for ✏️ 自定义违禁词库（请用逗号或换行分隔）" [ref=e115]
+  - textbox "✏️ 自定义违禁词库（请用逗号或换行分隔）" [ref=e59]: 国家级, 世界级, 最高级, 最佳, 最大, 第一, 唯一, 首个, 最好, 绝对, 彻底, 包治百病, 100%有效, 史无前例, 独家
+  - button "Help for 上传待检文章 (.txt, .md, .docx, .pdf)" [ref=e116]
+  - region "上传待检文章 (.txt, .md, .docx, .pdf)" [ref=e60] clickable [cursor:pointer, onclick, tabindex]
+    - button "选择文件" [ref=e93]: 未选择任何文件
+    - button "upload Upload" [ref=e94]
+  - button "🚨 使用当前词库一键扫描" [ref=e95]
+- button "Close" [ref=e37]
